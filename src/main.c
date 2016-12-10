@@ -10,6 +10,7 @@
 #include <whitgl/sys.h>
 #include <whitgl/timer.h>
 
+#include <debug_camera.h>
 
 int main()
 {
@@ -35,6 +36,8 @@ int main()
 	// whitgl_sys_add_image(0, "data/sprites.png");
 	whitgl_load_model(0, "data/model/room.wmd");
 
+	ld37_debug_camera debug_camera = ld37_debug_camera_zero;
+
 	whitgl_timer_init();
 	bool running = true;
 	while(running)
@@ -45,6 +48,7 @@ int main()
 		while(whitgl_timer_should_do_frame(60))
 		{
 			whitgl_input_update();
+			debug_camera = ld37_debug_camera_update(debug_camera);
 			if(whitgl_input_pressed(WHITGL_INPUT_ESC))
 				running = false;
 			if(whitgl_sys_should_close())
@@ -54,11 +58,8 @@ int main()
 		whitgl_sys_draw_init();
 
 		whitgl_float fov = whitgl_pi/2;
-		whitgl_fmat perspective = whitgl_fmat_perspective(fov, (float)setup.size.x/(float)setup.size.y, 0.1f, 10.0f);
-		whitgl_fvec3 up = {0,1,0};
-		whitgl_fvec3 camera_pos = {0,0,-2};
-		whitgl_fvec3 camera_to = {0,0,0};
-		whitgl_fmat view = whitgl_fmat_lookAt(camera_pos, camera_to, up);
+		whitgl_fmat perspective = whitgl_fmat_perspective(fov, (float)setup.size.x/(float)setup.size.y, 0.1f, 20.0f);
+		whitgl_fmat view = ld37_debug_camera_matrix(debug_camera);
 		whitgl_sys_draw_model(0, whitgl_fmat_identity, view, perspective);
 		whitgl_sys_draw_finish();
 
