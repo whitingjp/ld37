@@ -28,14 +28,6 @@ void main()\
 }\
 ";
 
-void draw(ld37_debug_camera debug_camera, whitgl_ivec setup_size)
-{
-	whitgl_float fov = whitgl_pi/2;
-	whitgl_fmat perspective = whitgl_fmat_perspective(fov, (float)setup_size.x/(float)setup_size.y, 0.1f, 32.0f);
-	whitgl_fmat view = ld37_debug_camera_matrix(debug_camera);
-	whitgl_sys_draw_model(0, whitgl_fmat_identity, view, perspective);
-}
-
 int main()
 {
 	WHITGL_LOG("Starting main.");
@@ -46,6 +38,7 @@ int main()
 	setup.pixel_size = 1;
 	setup.name = "main";
 	setup.start_focused = false;
+	setup.fullscreen = false;
 
 	if(!whitgl_sys_init(&setup))
 		return 1;
@@ -65,7 +58,6 @@ int main()
 	// whitgl_sound_add(0, "data/beam.ogg");
 	// whitgl_sys_add_image(0, "data/sprites.png");
 	whitgl_load_model(0, "data/model/room.wmd");
-	whitgl_load_model(1, "data/model/plane.wmd");
 
 	whitgl_float width = 5-0.5;
 	whitgl_float height = 3-0.5;
@@ -73,10 +65,6 @@ int main()
 	whitgl_float right = 5.75-width;
 
 	ld37_debug_camera debug_camera = ld37_debug_camera_zero;
-	debug_camera.pos.x = -3;
-	debug_camera.pos.y = 0.5;
-	debug_camera.pos.z = right+width/2;
-	debug_camera.yaw = whitgl_pi/2;
 
 	whitgl_timer_init();
 	bool running = true;
@@ -95,21 +83,6 @@ int main()
 				running = false;
 		}
 
-		whitgl_sys_draw_init(1);
-
-		draw(debug_camera, setup.size);
-
-		whitgl_sys_draw_init(0);
-
-		// draw(debug_camera, setup.size);
-		whitgl_float fov = whitgl_pi/2;
-
-		whitgl_fmat perspective = whitgl_fmat_perspective(fov, (float)setup.size.x/(float)setup.size.y, 0.1f, 32.0f);
-
-		whitgl_fmat view = ld37_debug_camera_matrix(debug_camera);
-		whitgl_sys_draw_model(0, whitgl_fmat_identity, view, perspective);
-
-
 		whitgl_fvec3 pane_verts[4] =
 		{
 			{-5.999,bottom,width+right},
@@ -117,9 +90,19 @@ int main()
 			{-5.999,bottom+height,width+right},
 			{-5.999,bottom+height,right},
 		};
-		whitgl_sys_draw_buffer_pane(1, pane_verts, whitgl_fmat_identity, view, perspective);
-		// whitgl_sys_draw_buffer_pane(1, whitgl_fmat_identity, view, perspective);
 
+		whitgl_float fov = whitgl_pi/2;
+		whitgl_fmat perspective = whitgl_fmat_perspective(fov, (float)setup.size.x/(float)setup.size.y, 0.1f, 32.0f);
+		whitgl_fmat view = ld37_debug_camera_matrix(debug_camera);
+
+		whitgl_int i;
+		for(i=0; i<8; i++)
+		{
+			whitgl_sys_draw_init(7-i);
+			whitgl_sys_draw_model(0, whitgl_fmat_identity, view, perspective);
+			if(i>0)
+				whitgl_sys_draw_buffer_pane(7-i+1, pane_verts, whitgl_fmat_identity, view, perspective);
+		}
 
 		whitgl_sys_draw_finish();
 

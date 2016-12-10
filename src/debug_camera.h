@@ -10,7 +10,7 @@ typedef struct
 	whitgl_float pitch;
 } ld37_debug_camera;
 
-static const ld37_debug_camera ld37_debug_camera_zero = {{0,0,0}, 0, 0};
+static const ld37_debug_camera ld37_debug_camera_zero = {{-4,0.5,3.5}, whitgl_pi/2, whitgl_pi/4};
 
 ld37_debug_camera ld37_debug_camera_update(ld37_debug_camera camera);
 whitgl_fmat ld37_debug_camera_matrix(ld37_debug_camera camera);
