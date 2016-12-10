@@ -18,7 +18,7 @@ typedef struct
 
 static const ld37_tank ld37_tank_zero = {{{0,0},0},{{0,0},0},0};
 
-ld37_tank ld37_tank_update(ld37_tank tank);
+ld37_tank ld37_tank_update(ld37_tank tank, whitgl_bool input_dirs[4]);
 whitgl_fmat ld37_tank_camera_matrix(ld37_tank tank);
 
 #endif // LD37_TANK_H_

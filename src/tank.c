@@ -2,7 +2,7 @@
 
 #include <whitgl/input.h>
 
-ld37_tank ld37_tank_update(ld37_tank tank)
+ld37_tank ld37_tank_update(ld37_tank tank, whitgl_bool input_dirs[4])
 {
 	if(tank.transition > 0)
 	{
@@ -14,22 +14,22 @@ ld37_tank ld37_tank_update(ld37_tank tank)
 		return tank;
 	}
 	tank.next = tank.current;
-	if(whitgl_input_down(WHITGL_INPUT_LEFT))
+	if(input_dirs[3])
 	{
 		tank.next.facing = whitgl_iwrap(tank.current.facing+1,0,4);
 		tank.transition = 1;
 	}
-	else if(whitgl_input_down(WHITGL_INPUT_RIGHT))
+	else if(input_dirs[1])
 	{
 		tank.next.facing = whitgl_iwrap(tank.current.facing-1,0,4);
 		tank.transition = 1;
 	}
-	else if(whitgl_input_down(WHITGL_INPUT_UP))
+	else if(input_dirs[0])
 	{
 		tank.next.pos = whitgl_ivec_add(tank.current.pos, whitgl_facing_to_ivec(tank.current.facing));
 		tank.transition = 1;
 	}
-	else if(whitgl_input_down(WHITGL_INPUT_DOWN))
+	else if(input_dirs[2])
 	{
 		tank.next.pos = whitgl_ivec_add(tank.current.pos, whitgl_ivec_inverse(whitgl_facing_to_ivec(tank.current.facing)));
 		tank.transition = 1;

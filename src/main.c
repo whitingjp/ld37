@@ -79,7 +79,13 @@ int main()
 		{
 			whitgl_input_update();
 			debug_camera = ld37_debug_camera_update(debug_camera);
-			tank = ld37_tank_update(tank);
+			whitgl_bool input_dirs[4];
+			input_dirs[0] = whitgl_input_down(WHITGL_INPUT_UP);
+			input_dirs[1] = whitgl_input_down(WHITGL_INPUT_RIGHT);
+			input_dirs[2] = whitgl_input_down(WHITGL_INPUT_DOWN);
+			input_dirs[3] = whitgl_input_down(WHITGL_INPUT_LEFT);
+
+			tank = ld37_tank_update(tank, input_dirs);
 			if(whitgl_input_pressed(WHITGL_INPUT_ESC))
 				running = false;
 			if(whitgl_sys_should_close())
