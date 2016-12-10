@@ -137,7 +137,7 @@ int main()
 					tanks[i] = ld37_tank_update(tanks[i], input_dir);
 				}
 			}
-			// WHITGL_LOG("p.x %d p.y %d", tanks[0].current.pos.x, tanks[0].current.pos.y);
+			WHITGL_LOG("p.x %d p.y %d", tanks[0].current.pos.x, tanks[0].current.pos.y);
 
 			if(whitgl_input_pressed(WHITGL_INPUT_ESC))
 				running = false;
