@@ -29,6 +29,8 @@ void main()\
 }\
 ";
 
+#define MAX_DEPTH (8)
+
 int main()
 {
 	WHITGL_LOG("Starting main.");
@@ -66,7 +68,10 @@ int main()
 	whitgl_float right = 5.75-width;
 
 	ld37_debug_camera debug_camera = ld37_debug_camera_zero;
-	ld37_tank tank = ld37_tank_zero;
+	ld37_tank tanks[MAX_DEPTH];
+	whitgl_int i;
+	for(i=0; i<MAX_DEPTH; i++)
+		tanks[i] = ld37_tank_zero;
 
 	whitgl_timer_init();
 	bool running = true;
@@ -79,13 +84,20 @@ int main()
 		{
 			whitgl_input_update();
 			debug_camera = ld37_debug_camera_update(debug_camera);
+			whitgl_bool input_dirs_zero[4] = {false,false,false,false};
 			whitgl_bool input_dirs[4];
 			input_dirs[0] = whitgl_input_down(WHITGL_INPUT_UP);
 			input_dirs[1] = whitgl_input_down(WHITGL_INPUT_RIGHT);
 			input_dirs[2] = whitgl_input_down(WHITGL_INPUT_DOWN);
 			input_dirs[3] = whitgl_input_down(WHITGL_INPUT_LEFT);
+			for(i=0; i<MAX_DEPTH; i++)
+			{
+				if(i==0)
+					tanks[i] = ld37_tank_update(tanks[i], input_dirs);
+				else
+					tanks[i] = ld37_tank_update(tanks[i], input_dirs_zero);
+			}
 
-			tank = ld37_tank_update(tank, input_dirs);
 			if(whitgl_input_pressed(WHITGL_INPUT_ESC))
 				running = false;
 			if(whitgl_sys_should_close())
@@ -103,15 +115,15 @@ int main()
 		whitgl_float fov = whitgl_pi/2;
 		whitgl_fmat perspective = whitgl_fmat_perspective(fov, (float)setup.size.x/(float)setup.size.y, 0.01f, 32.0f);
 		// whitgl_fmat view = ld37_debug_camera_matrix(debug_camera);
-		whitgl_fmat view = ld37_tank_camera_matrix(tank);
 
-		whitgl_int i;
-		for(i=0; i<8; i++)
+		for(i=0; i<MAX_DEPTH; i++)
 		{
-			whitgl_sys_draw_init(7-i);
+			whitgl_fmat view = ld37_tank_camera_matrix(tanks[MAX_DEPTH-i-1]);
+
+			whitgl_sys_draw_init(MAX_DEPTH-1-i);
 			whitgl_sys_draw_model(0, whitgl_fmat_identity, view, perspective);
 			if(i>0)
-				whitgl_sys_draw_buffer_pane(7-i+1, pane_verts, whitgl_fmat_identity, view, perspective);
+				whitgl_sys_draw_buffer_pane(MAX_DEPTH-1-i+1, pane_verts, whitgl_fmat_identity, view, perspective);
 		}
 
 		whitgl_sys_draw_finish();
