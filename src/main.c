@@ -73,6 +73,8 @@ int main()
 	for(i=0; i<MAX_DEPTH; i++)
 		tanks[i] = ld37_tank_zero;
 
+	whitgl_int input_queue = -1;
+
 	whitgl_timer_init();
 	bool running = true;
 	while(running)
@@ -83,27 +85,35 @@ int main()
 		while(whitgl_timer_should_do_frame(60))
 		{
 			whitgl_input_update();
+			if(whitgl_input_pressed(WHITGL_INPUT_UP)) input_queue = 0;
+			if(whitgl_input_pressed(WHITGL_INPUT_RIGHT)) input_queue = 1;
+			if(whitgl_input_pressed(WHITGL_INPUT_DOWN)) input_queue = 2;
+			if(whitgl_input_pressed(WHITGL_INPUT_LEFT)) input_queue = 3;
 			debug_camera = ld37_debug_camera_update(debug_camera);
 			for(i=0; i<MAX_DEPTH; i++)
 			{
 				if(i==0)
 				{
-					whitgl_bool input_dirs[4];
-					input_dirs[0] = whitgl_input_pressed(WHITGL_INPUT_UP);
-					input_dirs[1] = whitgl_input_pressed(WHITGL_INPUT_RIGHT);
-					input_dirs[2] = whitgl_input_pressed(WHITGL_INPUT_DOWN);
-					input_dirs[3] = whitgl_input_pressed(WHITGL_INPUT_LEFT);
-					tanks[i] = ld37_tank_update(tanks[i], input_dirs);
+					whitgl_int input_dir = -1;
+					if(tanks[i].transition <= 0 && input_queue > -1)
+					{
+						input_dir = input_queue;
+						input_queue = -1;
+					}
+					tanks[i] = ld37_tank_update(tanks[i], input_dir);
 				}
 				else
 				{
-					whitgl_bool input_dirs[4];
-					whitgl_ivec pos = tanks[i-1].current.pos;
-					input_dirs[0] = pos.x == 1 && pos.y==-9 && tanks[i-1].just_arrived;
-					input_dirs[1] = pos.x == 2 && pos.y==-8 && tanks[i-1].just_arrived;
-					input_dirs[2] = pos.x == 3 && pos.y==-9 && tanks[i-1].just_arrived;
-					input_dirs[3] = pos.x == 2 && pos.y==-10 && tanks[i-1].just_arrived;
-					tanks[i] = ld37_tank_update(tanks[i], input_dirs);
+					whitgl_int input_dir = -1;
+					if(tanks[i-1].just_arrived)
+					{
+						whitgl_ivec pos = tanks[i-1].current.pos;
+						if(pos.x == 1 && pos.y==-9) input_dir = 0;
+						if(pos.x == 2 && pos.y==-8) input_dir = 1;
+						if(pos.x == 3 && pos.y==-9) input_dir = 2;
+						if(pos.x == 2 && pos.y==-10) input_dir = 3;
+					}
+					tanks[i] = ld37_tank_update(tanks[i], input_dir);
 				}
 			}
 
