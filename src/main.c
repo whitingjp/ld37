@@ -41,8 +41,10 @@ void main()\
 	float g = dot(fragmentNormal, vec3(0.6,1.0,0.25))/2+1;\
 	float b = dot(fragmentNormal, vec3(0.75,1.0,0.25))/2+1;\
 	vec3 col = vec3(r,g,b)*fragmentColor;\
+	float overdrive = pow((r+g+b)/3,4);\
+	col = col*0.8 + vec3(overdrive)/20;\
 	vec3 hsv = rgb2hsv(col);\
-	hsv.x -= hueShift;\
+	hsv.x -= hueShift*3;\
 	vec3 shift = hsv2rgb(hsv);\
 	outColor = vec4(shift,1);\
 }\
