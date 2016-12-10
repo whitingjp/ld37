@@ -14,9 +14,10 @@ typedef struct
 	ld37_location next;
 	ld37_location current;
 	whitgl_float transition;
+	whitgl_bool just_arrived;
 } ld37_tank;
 
-static const ld37_tank ld37_tank_zero = {{{0,0},0},{{0,0},0},0};
+static const ld37_tank ld37_tank_zero = {{{0,0},0},{{0,0},0},0,false};
 
 ld37_tank ld37_tank_update(ld37_tank tank, whitgl_bool input_dirs[4]);
 whitgl_fmat ld37_tank_camera_matrix(ld37_tank tank);

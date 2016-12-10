@@ -84,18 +84,27 @@ int main()
 		{
 			whitgl_input_update();
 			debug_camera = ld37_debug_camera_update(debug_camera);
-			whitgl_bool input_dirs_zero[4] = {false,false,false,false};
-			whitgl_bool input_dirs[4];
-			input_dirs[0] = whitgl_input_down(WHITGL_INPUT_UP);
-			input_dirs[1] = whitgl_input_down(WHITGL_INPUT_RIGHT);
-			input_dirs[2] = whitgl_input_down(WHITGL_INPUT_DOWN);
-			input_dirs[3] = whitgl_input_down(WHITGL_INPUT_LEFT);
 			for(i=0; i<MAX_DEPTH; i++)
 			{
 				if(i==0)
+				{
+					whitgl_bool input_dirs[4];
+					input_dirs[0] = whitgl_input_pressed(WHITGL_INPUT_UP);
+					input_dirs[1] = whitgl_input_pressed(WHITGL_INPUT_RIGHT);
+					input_dirs[2] = whitgl_input_pressed(WHITGL_INPUT_DOWN);
+					input_dirs[3] = whitgl_input_pressed(WHITGL_INPUT_LEFT);
 					tanks[i] = ld37_tank_update(tanks[i], input_dirs);
+				}
 				else
-					tanks[i] = ld37_tank_update(tanks[i], input_dirs_zero);
+				{
+					whitgl_bool input_dirs[4];
+					whitgl_ivec pos = tanks[i-1].current.pos;
+					input_dirs[0] = pos.x == 1 && pos.y==-9 && tanks[i-1].just_arrived;
+					input_dirs[1] = pos.x == 2 && pos.y==-8 && tanks[i-1].just_arrived;
+					input_dirs[2] = pos.x == 3 && pos.y==-9 && tanks[i-1].just_arrived;
+					input_dirs[3] = pos.x == 2 && pos.y==-10 && tanks[i-1].just_arrived;
+					tanks[i] = ld37_tank_update(tanks[i], input_dirs);
+				}
 			}
 
 			if(whitgl_input_pressed(WHITGL_INPUT_ESC))
