@@ -2,6 +2,35 @@
 
 #include <whitgl/input.h>
 
+whitgl_bool ld37_tank_valid(whitgl_ivec p)
+{
+	if(p.x < 0)
+		return false;
+	if(p.x > 11)
+		return false;
+	if(p.y > -1)
+		return false;
+	if(p.y < -11)
+		return false;
+	if(p.y == -6 && p.x < 6)
+		return false;
+	if((p.x == 6 || p.x == 7) && (p.y==-7 || p.y==-6))
+		return false;
+	if(p.x >= 8 && p.x <= 10 && p.y >=-10 && p.y <= -8)
+		return false;
+	if(p.x == 7 && p.y == -5)
+		return false;
+	if(p.x == 6 && p.y == -11)
+		return false;
+	if(p.x >= 7 && p.y == -1)
+		return false;
+	if(p.x == 11 && p.y >= -6)
+		return false;
+	if(p.x == 10 && p.y == -2)
+		return false;
+	return true;
+}
+
 ld37_tank ld37_tank_update(ld37_tank tank, whitgl_int input_dir)
 {
 	tank.just_arrived = false;
@@ -36,6 +65,11 @@ ld37_tank ld37_tank_update(ld37_tank tank, whitgl_int input_dir)
 	{
 		tank.next.pos = whitgl_ivec_add(tank.current.pos, whitgl_ivec_inverse(whitgl_facing_to_ivec(tank.current.facing)));
 		tank.transition = 1;
+	}
+	if(!ld37_tank_valid(tank.next.pos))
+	{
+		tank.next.pos = tank.current.pos;
+		tank.transition = 0;
 	}
 	return tank;
 }
