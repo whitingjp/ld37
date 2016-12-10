@@ -1,5 +1,7 @@
 #include "debug_camera.h"
 
+#include <whitgl/logging.h>
+
 #include <whitgl/input.h>
 
 ld37_debug_camera ld37_debug_camera_update(ld37_debug_camera camera)
