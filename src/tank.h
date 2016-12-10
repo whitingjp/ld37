@@ -17,7 +17,7 @@ typedef struct
 	whitgl_bool just_arrived;
 } ld37_tank;
 
-static const ld37_tank ld37_tank_zero = {{{0,0},0},{{0,0},0},0,false};
+static const ld37_tank ld37_tank_zero = {{{2,-3},1},{{2,-3},1},0,false};
 
 ld37_tank ld37_tank_update(ld37_tank tank, whitgl_int input_dir);
 whitgl_fmat ld37_tank_camera_matrix(ld37_tank tank);
