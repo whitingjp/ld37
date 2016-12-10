@@ -11,6 +11,7 @@
 #include <whitgl/timer.h>
 
 #include <debug_camera.h>
+#include <tank.h>
 
 const char* model_src = "\
 #version 150\
@@ -65,6 +66,7 @@ int main()
 	whitgl_float right = 5.75-width;
 
 	ld37_debug_camera debug_camera = ld37_debug_camera_zero;
+	ld37_tank tank = ld37_tank_zero;
 
 	whitgl_timer_init();
 	bool running = true;
@@ -77,6 +79,7 @@ int main()
 		{
 			whitgl_input_update();
 			debug_camera = ld37_debug_camera_update(debug_camera);
+			tank = ld37_tank_update(tank);
 			if(whitgl_input_pressed(WHITGL_INPUT_ESC))
 				running = false;
 			if(whitgl_sys_should_close())
@@ -92,8 +95,9 @@ int main()
 		};
 
 		whitgl_float fov = whitgl_pi/2;
-		whitgl_fmat perspective = whitgl_fmat_perspective(fov, (float)setup.size.x/(float)setup.size.y, 0.1f, 32.0f);
-		whitgl_fmat view = ld37_debug_camera_matrix(debug_camera);
+		whitgl_fmat perspective = whitgl_fmat_perspective(fov, (float)setup.size.x/(float)setup.size.y, 0.01f, 32.0f);
+		// whitgl_fmat view = ld37_debug_camera_matrix(debug_camera);
+		whitgl_fmat view = ld37_tank_camera_matrix(tank);
 
 		whitgl_int i;
 		for(i=0; i<8; i++)
