@@ -37,6 +37,7 @@ int main()
 	whitgl_load_model(0, "data/model/room.wmd");
 
 	ld37_debug_camera debug_camera = ld37_debug_camera_zero;
+	debug_camera.pos.y = 0.5;
 
 	whitgl_timer_init();
 	bool running = true;
@@ -58,7 +59,7 @@ int main()
 		whitgl_sys_draw_init();
 
 		whitgl_float fov = whitgl_pi/2;
-		whitgl_fmat perspective = whitgl_fmat_perspective(fov, (float)setup.size.x/(float)setup.size.y, 0.1f, 20.0f);
+		whitgl_fmat perspective = whitgl_fmat_perspective(fov, (float)setup.size.x/(float)setup.size.y, 0.1f, 32.0f);
 		whitgl_fmat view = ld37_debug_camera_matrix(debug_camera);
 		whitgl_sys_draw_model(0, whitgl_fmat_identity, view, perspective);
 		whitgl_sys_draw_finish();
