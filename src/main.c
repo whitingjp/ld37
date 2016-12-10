@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stddef.h>
+#include <unistd.h>
 
 #include <whitgl/input.h>
 #include <whitgl/logging.h>
@@ -15,10 +16,11 @@ int main()
 	WHITGL_LOG("Starting main.");
 
 	whitgl_sys_setup setup = whitgl_sys_setup_zero;
-	setup.size.x = 32;
-	setup.size.y = 32;
-	setup.pixel_size = 16;
+	setup.size.x = 16*64;
+	setup.size.y = 9*64;
+	setup.pixel_size = 1;
 	setup.name = "main";
+	setup.start_focused = false;
 
 	if(!whitgl_sys_init(&setup))
 		return 1;
@@ -31,7 +33,7 @@ int main()
 
 	// whitgl_sound_add(0, "data/beam.ogg");
 	// whitgl_sys_add_image(0, "data/sprites.png");
-	// whitgl_load_model(0, "data/torus.wmd");
+	whitgl_load_model(0, "data/model/room.wmd");
 
 	whitgl_timer_init();
 	bool running = true;
@@ -51,14 +53,18 @@ int main()
 
 		whitgl_sys_draw_init();
 
-		// whitgl_float fov = whitgl_pi/2;
-		// whitgl_fmat perspective = whitgl_fmat_perspective(fov, (float)setup.size.x/(float)setup.size.y, 0.1f, 10.0f);
-		// whitgl_fvec3 up = {0,1,0};
-		// whitgl_fvec3 camera_pos = {0,0,-2};
-		// whitgl_fvec3 camera_to = {0,0,0};
-		// whitgl_fmat view = whitgl_fmat_lookAt(camera_pos, camera_to, up);
-		// whitgl_sys_draw_model(shape, model_matrix, view, perspective);
+		whitgl_float fov = whitgl_pi/2;
+		whitgl_fmat perspective = whitgl_fmat_perspective(fov, (float)setup.size.x/(float)setup.size.y, 0.1f, 10.0f);
+		whitgl_fvec3 up = {0,1,0};
+		whitgl_fvec3 camera_pos = {0,0,-2};
+		whitgl_fvec3 camera_to = {0,0,0};
+		whitgl_fmat view = whitgl_fmat_lookAt(camera_pos, camera_to, up);
+		whitgl_sys_draw_model(0, whitgl_fmat_identity, view, perspective);
 		whitgl_sys_draw_finish();
+
+
+		if(!whitgl_sys_window_focused())
+			usleep(10000);
 	}
 
 	whitgl_input_shutdown();
