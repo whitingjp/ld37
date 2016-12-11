@@ -19,7 +19,24 @@ const char* model_src = "\
 in vec3 fragmentColor;\
 in vec3 fragmentNormal;\
 out vec4 outColor;\
-uniform float hueShift;\
+void main()\
+{\
+	float r = dot(fragmentNormal, vec3(-0.5,1.0,-0.25))/2+1;\
+	float g = dot(fragmentNormal, vec3(-0.6,1.0,-0.25))/2+1;\
+	float b = dot(fragmentNormal, vec3(-0.75,1.0,-0.25))/2+1;\
+	vec3 col = vec3(r,g,b)*fragmentColor;\
+	float overdrive = pow((r+g+b)/3,4);\
+	col = col*0.8 + vec3(overdrive)/20;\
+	outColor = vec4(col,1);\
+}\
+";
+
+const char* texture_src = "\
+#version 150\
+\n\
+in vec2 Texturepos;\
+out vec4 outColor;\
+uniform sampler2D tex;\
 vec3 rgb2hsv(vec3 c)\
 {\
     vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);\
@@ -37,14 +54,9 @@ vec3 hsv2rgb(vec3 c)\
 }\
 void main()\
 {\
-	float r = dot(fragmentNormal, vec3(-0.5,1.0,-0.25))/2+1;\
-	float g = dot(fragmentNormal, vec3(-0.6,1.0,-0.25))/2+1;\
-	float b = dot(fragmentNormal, vec3(-0.75,1.0,-0.25))/2+1;\
-	vec3 col = vec3(r,g,b)*fragmentColor;\
-	float overdrive = pow((r+g+b)/3,4);\
-	col = col*0.8 + vec3(overdrive)/20;\
+	vec3 col = texture( tex, Texturepos ).rgb;\
 	vec3 hsv = rgb2hsv(col);\
-	hsv.x -= hueShift*3;\
+	hsv.x += 0.12;\
 	vec3 shift = hsv2rgb(hsv);\
 	outColor = vec4(shift,1);\
 }\
@@ -133,13 +145,16 @@ int main()
 
 	whitgl_shader model_shader = whitgl_shader_zero;
 	model_shader.fragment_src = model_src;
-	model_shader.num_uniforms = 1;
-	model_shader.uniforms[0] = "hueShift";
 
 	if(!whitgl_change_shader(WHITGL_SHADER_MODEL, model_shader))
 	 	return 1;
 
-	whitgl_sys_color bg = {0xc7,0xb2,0xf6,0xff};
+	whitgl_shader texture_shader = whitgl_shader_zero;
+	texture_shader.fragment_src = texture_src;
+	if(!whitgl_change_shader(WHITGL_SHADER_TEXTURE, texture_shader))
+	 	return 1;
+
+	whitgl_sys_color bg = {0x89,0xe0,0xfc,0xff};
 	whitgl_sys_set_clear_color(bg);
 
 	whitgl_sound_init();
@@ -275,7 +290,7 @@ int main()
 			}
 			if(finished)
 			{
-				finish_timer += 1/240.0;
+				finish_timer += 1/320.0;
 			}
 			// p.x <= 4 && p.y <= -7 && facing == 3
 			// WHITGL_LOG("p.x %d p.y %d facing %d", tanks[0].current.pos.x, tanks[0].current.pos.y, tanks[0].current.facing);
@@ -300,7 +315,6 @@ int main()
 
 			whitgl_sys_draw_init(MAX_DEPTH-1-i);
 
-			whitgl_set_shader_uniform(WHITGL_SHADER_MODEL, 0, (MAX_DEPTH-i-1)*-0.05);
 			if(i<cutoff)
 				continue;
 			whitgl_sys_draw_model(0, whitgl_fmat_identity, view, perspective);
