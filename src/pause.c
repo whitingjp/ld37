@@ -10,19 +10,33 @@
 
 ld37_pause ld37_pause_update(ld37_pause pause)
 {
+	whitgl_sound_volume(pause.volume/10.0);
+
 	if(whitgl_input_pressed(WHITGL_INPUT_UP))
+	{
 		pause.selected = whitgl_iclamp(pause.selected-1,0,3);
+		whitgl_sound_play(3+8,1,1);
+	}
 	if(whitgl_input_pressed(WHITGL_INPUT_DOWN))
+	{
 		pause.selected = whitgl_iclamp(pause.selected+1,0,3);
+		whitgl_sound_play(0+8,1,1);
+	}
 	if(whitgl_input_pressed(WHITGL_INPUT_ESC))
 		pause.paused = !pause.paused;
 
 	if(pause.selected == 1)
 	{
 		if(whitgl_input_pressed(WHITGL_INPUT_LEFT))
+		{
 			pause.volume = whitgl_iclamp(pause.volume-1,0,9);
+			whitgl_sound_play(3+12,1,1);
+		}
 		if(whitgl_input_pressed(WHITGL_INPUT_RIGHT))
+		{
 			pause.volume = whitgl_iclamp(pause.volume+1,0,9);
+			whitgl_sound_play(3+12,1,1);
+		}
 	}
 	if(whitgl_input_pressed(WHITGL_INPUT_A))
 	{
