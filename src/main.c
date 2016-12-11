@@ -52,7 +52,7 @@ void main()\
 
 #define MAX_DEPTH (6)
 
-static const whitgl_int directions_to_mid[37] =
+static const whitgl_int directions_to_mid[38] =
 {
 	0,0,0,0,0,0,0,
 	1,
@@ -67,7 +67,15 @@ static const whitgl_int directions_to_mid[37] =
 	0,0,
 	3,
 	0,0,0,0,0,
-	0,2
+	0,2,
+	-1,
+};
+static const whitgl_int automove[4][6] =
+{
+	{0,2,-1},
+	{1,0,2,3,-1},
+	{2,0,-1},
+	{3,0,2,1,-1},
 };
 
 int main()
@@ -119,8 +127,6 @@ int main()
 
 	whitgl_int input_queue = -1;
 
-	whitgl_int autostep = 0;
-
 	whitgl_timer_init();
 	bool running = true;
 	while(running)
@@ -139,9 +145,33 @@ int main()
 				if(whitgl_input_pressed(WHITGL_INPUT_LEFT)) input_queue = 3;
 			} else
 			{
-				if(input_queue == -1 && autostep < 37)
+
+				if(input_queue == -1)
 				{
-					input_queue = directions_to_mid[autostep++];
+					whitgl_int next = -1;
+					if(!tanks[0].autoinplace)
+					{
+						next = directions_to_mid[tanks[0].autostep++];
+						if(next == -1)
+						{
+							tanks[0].autoinplace = true;
+							tanks[0].autostep = 0;
+						}
+					} else
+					{
+						whitgl_int move = directions_to_mid[tanks[1].autostep];
+						if(move != -1)
+						{
+							next = automove[move][tanks[0].autostep++];
+							if(next == -1)
+							{
+								tanks[1].autostep++;
+								tanks[0].autostep=0;
+							}
+						}
+					}
+					if(next != -1)
+						input_queue = next;
 				}
 			}
 			debug_camera = ld37_debug_camera_update(debug_camera);
