@@ -214,6 +214,7 @@ int main()
 
 	whitgl_float time = 0;
 
+
 	ld37_pause pause = ld37_pause_zero;
 
 	while(running)
@@ -223,6 +224,11 @@ int main()
 		whitgl_timer_tick();
 		while(whitgl_timer_should_do_frame(fps))
 		{
+			fps = 60;
+			if(!pause.paused && pause.autoplay && !finished && whitgl_input_down(WHITGL_INPUT_A))
+				fps *= 4;
+			if(!pause.paused && pause.autoplay && !finished && whitgl_input_down(WHITGL_INPUT_B))
+				fps *= 4;
 			time += 1/60.0;
 			whitgl_input_update();
 			whitgl_bool old_autoplay = pause.autoplay;
@@ -294,14 +300,19 @@ int main()
 				}
 			}
 
-			whitgl_bool should_finish = true;
+			whitgl_int count_stages = 0;
 			for(i=0; i<MAX_DEPTH; i++)
 			{
-				if(tanks[i].current.pos.x > 4) should_finish = false;
-				if(tanks[i].current.pos.y > -7) should_finish = false;
-				if(tanks[i].current.facing != 3) should_finish = false;
+				if(tanks[i].current.pos.x > 4) continue;
+				if(tanks[i].current.pos.y > -7) continue;
+				if(tanks[i].current.facing != 3) continue;
+				count_stages++;
 			}
-			if(should_finish && !finished)
+			if(count_stages >= 2)
+			{
+				pause.can_autoplay = true;
+			}
+			if(count_stages == MAX_DEPTH && !finished)
 			{
 				finished = true;
 				fps = 60;
