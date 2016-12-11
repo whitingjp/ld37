@@ -52,13 +52,13 @@ void main()\
 
 #define MAX_DEPTH (6)
 
-static const whitgl_int directions_to_mid[38] =
+static const whitgl_int directions_to_mid[] =
 {
 	0,0,0,0,0,0,0,
 	1,
 	0,0,0,0,
 	3,
-	0,0,0,
+	0,0,
 	1,
 	0,0,0,0,
 	1,
@@ -124,8 +124,9 @@ int main()
 	setup.name = "main";
 	setup.start_focused = false;
 	setup.cursor = CURSOR_HIDE;
+	// setup.fullscreen = true;
 
-	whitgl_bool autoplay = false;
+	whitgl_bool autoplay = true;
 
 	if(!whitgl_sys_init(&setup))
 		return 1;
@@ -228,7 +229,7 @@ int main()
 			{-5.995,bottom+height,right},
 		};
 
-		whitgl_float fov = whitgl_pi/2;
+		whitgl_float fov = whitgl_pi/2.25;
 		whitgl_fmat perspective = whitgl_fmat_perspective(fov, (float)setup.size.x/(float)setup.size.y, 0.01f, 32.0f);
 		// whitgl_fmat view = ld37_debug_camera_matrix(debug_camera);
 

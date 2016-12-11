@@ -37,7 +37,7 @@ ld37_tank ld37_tank_update(ld37_tank tank, whitgl_int input_dir)
 	tank.just_arrived = false;
 	if(tank.transition > 0)
 	{
-		tank.transition -= 1/16.0;
+		tank.transition -= 1/12.0;
 		if(tank.transition <= 0)
 		{
 			if(tank.next.facing == tank.current.facing)
@@ -99,7 +99,7 @@ whitgl_fmat ld37_tank_camera_matrix(ld37_tank tank)
 	whitgl_float current_angle = whitgl_facing_to_angle(tank.current.facing);
 	whitgl_float next_angle = whitgl_facing_to_angle(tank.next.facing);
 	whitgl_fvec facing = whitgl_fvec_from_angle(whitgl_angle_lerp(next_angle, current_angle, tank.transition));
-	whitgl_fvec3 forwards = {facing.x, 0.1, facing.y};
+	whitgl_fvec3 forwards = {facing.x, 0.2, facing.y};
 	whitgl_fvec3 camera_to = whitgl_fvec3_add(pos, forwards);
 	whitgl_fmat view = whitgl_fmat_lookAt(pos, camera_to, up);
 	return view;

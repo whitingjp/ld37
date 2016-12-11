@@ -17,7 +17,7 @@ whitgl_fmat ld37_debug_camera_matrix(ld37_debug_camera camera)
 {
 	whitgl_fvec3 up = {0,1,0};
 	whitgl_fvec facing = whitgl_fvec_from_angle(-camera.yaw);
-	whitgl_fvec3 forwards = {facing.x, 0.1, facing.y};
+	whitgl_fvec3 forwards = {facing.x, 0.2, facing.y};
 	whitgl_fvec3 camera_to = whitgl_fvec3_add(camera.pos, forwards);
 	whitgl_fmat view = whitgl_fmat_lookAt(camera.pos, camera_to, up);
 	return view;
