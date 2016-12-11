@@ -37,9 +37,9 @@ vec3 hsv2rgb(vec3 c)\
 }\
 void main()\
 {\
-	float r = dot(fragmentNormal, vec3(0.5,1.0,0.25))/2+1;\
-	float g = dot(fragmentNormal, vec3(0.6,1.0,0.25))/2+1;\
-	float b = dot(fragmentNormal, vec3(0.75,1.0,0.25))/2+1;\
+	float r = dot(fragmentNormal, vec3(-0.5,1.0,-0.25))/2+1;\
+	float g = dot(fragmentNormal, vec3(-0.6,1.0,-0.25))/2+1;\
+	float b = dot(fragmentNormal, vec3(-0.75,1.0,-0.25))/2+1;\
 	vec3 col = vec3(r,g,b)*fragmentColor;\
 	float overdrive = pow((r+g+b)/3,4);\
 	col = col*0.8 + vec3(overdrive)/20;\
@@ -222,10 +222,10 @@ int main()
 
 		whitgl_fvec3 pane_verts[4] =
 		{
-			{-5.999,bottom,width+right},
-			{-5.999,bottom,right},
-			{-5.999,bottom+height,width+right},
-			{-5.999,bottom+height,right},
+			{-5.995,bottom,width+right},
+			{-5.995,bottom,right},
+			{-5.995,bottom+height,width+right},
+			{-5.995,bottom+height,right},
 		};
 
 		whitgl_float fov = whitgl_pi/2;
