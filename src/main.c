@@ -229,6 +229,14 @@ int main()
 				fps *= 4;
 			if(!pause.paused && pause.autoplay && !finished && whitgl_input_down(WHITGL_INPUT_B))
 				fps *= 4;
+			if(finished && finish_timer > 1.2 && pause.paused)
+			{
+				finished = false;
+				finish_timer = 0;
+				whitgl_int i;
+				for(i=0; i<MAX_DEPTH; i++)
+					tanks[i] = ld37_tank_zero;
+			}
 			time += 1/60.0;
 			whitgl_input_update();
 			whitgl_bool old_autoplay = pause.autoplay;
