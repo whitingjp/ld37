@@ -12,6 +12,7 @@
 
 #include <debug_camera.h>
 #include <tank.h>
+#include <pause.h>
 
 const char* model_src = "\
 #version 150\
@@ -54,11 +55,12 @@ vec3 hsv2rgb(vec3 c)\
 }\
 void main()\
 {\
-	vec3 col = texture( tex, Texturepos ).rgb;\
+	vec4 cola = texture( tex, Texturepos );\
+	vec3 col = cola.rgb;\
 	vec3 hsv = rgb2hsv(col);\
 	hsv.x += 0.12;\
 	vec3 shift = hsv2rgb(hsv);\
-	outColor = vec4(shift,1);\
+	outColor = vec4(shift,cola.a);\
 }\
 ";
 
@@ -133,12 +135,15 @@ int main()
 	setup.size.x = 16*64;
 	setup.size.y = 9*64;
 	setup.pixel_size = 1;
+	// setup.size.x = 64;
+	// setup.size.y = 64;
+	// setup.pixel_size = 5;
 	setup.name = "main";
 	setup.start_focused = false;
 	setup.cursor = CURSOR_HIDE;
 	// setup.fullscreen = true;
 
-	whitgl_bool autoplay = true;
+	whitgl_bool autoplay = false;
 
 	if(!whitgl_sys_init(&setup))
 		return 1;
@@ -186,7 +191,7 @@ int main()
 	whitgl_sound_add(23, "data/sound/24.wav");
 
 
-	// whitgl_sys_add_image(0, "data/sprites.png");
+	whitgl_sys_add_image(0, "data/sprites/sprites.png");
 	whitgl_load_model(0, "data/model/room.wmd");
 
 	whitgl_float width = 5-0.5;
@@ -207,7 +212,11 @@ int main()
 
 	whitgl_timer_init();
 	bool running = true;
-	whitgl_float fps = 12000;
+	whitgl_float fps = 60;
+
+	whitgl_float time = 0;
+
+	ld37_pause pause = ld37_pause_zero;
 
 	while(running)
 	{
@@ -216,7 +225,15 @@ int main()
 		whitgl_timer_tick();
 		while(whitgl_timer_should_do_frame(fps))
 		{
+			time += 1/60.0;
 			whitgl_input_update();
+			pause = ld37_pause_update(pause);
+			if(whitgl_sys_should_close())
+				running = false;
+			if(pause.should_exit)
+				running = false;
+			if(pause.paused || !running)
+				continue;
 			if(!autoplay)
 			{
 				if(whitgl_input_pressed(WHITGL_INPUT_UP)) input_queue = 0;
@@ -271,10 +288,6 @@ int main()
 					break;
 				}
 			}
-			if(whitgl_input_pressed(WHITGL_INPUT_ESC))
-				running = false;
-			if(whitgl_sys_should_close())
-				running = false;
 
 			whitgl_bool should_finish = true;
 			for(i=0; i<MAX_DEPTH; i++)
@@ -283,18 +296,25 @@ int main()
 				if(tanks[i].current.pos.y > -7) should_finish = false;
 				if(tanks[i].current.facing != 3) should_finish = false;
 			}
-			if(should_finish && !finished && finish_timer < 1)
+			if(should_finish && !finished)
 			{
 				finished = true;
 				fps = 60;
 			}
 			if(finished)
 			{
-				finish_timer += 1/320.0;
+				whitgl_float old_timer = finish_timer;
+				finish_timer += 1/420.0;
+				if(old_timer <= 1 && (int)(finish_timer*MAX_DEPTH*4) != (int)(old_timer*MAX_DEPTH*4))
+					whitgl_sound_play(MAX_DEPTH*4-(int)(finish_timer*MAX_DEPTH*4), 1, 1);
+				if(old_timer < 1.2 && finish_timer >= 1.2)
+				{
+					for(i=0; i<MAX_DEPTH; i++)
+						whitgl_sound_play(i*4,1,1);
+					whitgl_sys_set_clear_color(whitgl_sys_color_black);
+				}
 			}
-			// p.x <= 4 && p.y <= -7 && facing == 3
-			// WHITGL_LOG("p.x %d p.y %d facing %d", tanks[0].current.pos.x, tanks[0].current.pos.y, tanks[0].current.facing);
-		}
+	}
 
 		whitgl_fvec3 pane_verts[4] =
 		{
@@ -321,6 +341,8 @@ int main()
 			if(i>0)
 				whitgl_sys_draw_buffer_pane(MAX_DEPTH-1-i+1, pane_verts, whitgl_fmat_identity, view, perspective);
 		}
+
+		ld37_pause_draw(pause, setup.size);
 
 		whitgl_sys_draw_finish();
 
