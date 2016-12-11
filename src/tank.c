@@ -37,7 +37,7 @@ ld37_tank ld37_tank_update(ld37_tank tank, whitgl_int input_dir)
 	tank.just_arrived = false;
 	if(tank.transition > 0)
 	{
-		tank.transition -= 1/12.0;
+		tank.transition -= 1/16.0;
 		if(tank.transition <= 0)
 		{
 			if(tank.next.facing == tank.current.facing)

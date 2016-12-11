@@ -123,10 +123,9 @@ int main()
 	setup.pixel_size = 1;
 	setup.name = "main";
 	setup.start_focused = false;
-	// setup.fullscreen = true;
 	setup.cursor = CURSOR_HIDE;
 
-	whitgl_bool autoplay = true;
+	whitgl_bool autoplay = false;
 
 	if(!whitgl_sys_init(&setup))
 		return 1;
