@@ -10,6 +10,10 @@
 
 ld37_pause ld37_pause_update(ld37_pause pause)
 {
+	if(pause.paused)
+		pause.transition = whitgl_fclamp(pause.transition+0.1, 0, 1);
+	else
+		pause.transition = whitgl_fclamp(pause.transition-0.1, 0, 1);
 	whitgl_sound_volume(pause.volume/10.0);
 
 	if(whitgl_input_pressed(WHITGL_INPUT_UP))
@@ -62,17 +66,19 @@ ld37_pause ld37_pause_update(ld37_pause pause)
 }
 void ld37_pause_draw(ld37_pause pause, whitgl_ivec setup_size)
 {
-	if(!pause.paused)
-		return;
+	whitgl_float pt = 1-pause.transition;
+	whitgl_float offy = pt*pt*setup_size.y/4;
+	whitgl_float offx = pt*pt*setup_size.x;
+
 	whitgl_sprite text_sprite = {0, {0,0}, {5*16,5*16}};
-	whitgl_ivec pause_pos = {setup_size.x/2-(text_sprite.size.x/2.0)*5, 16*2};
+	whitgl_ivec pause_pos = {setup_size.x/2-(text_sprite.size.x/2.0)*5, 16*2-offy};
 	whitgl_sys_draw_text(text_sprite, "pause", pause_pos);
 
 	whitgl_int left = 8*16;
-	whitgl_ivec resume_pos = {left, 16*2+7*16};
+	whitgl_ivec resume_pos = {left-offx, 16*2+7*16};
 	whitgl_sys_draw_text(text_sprite, "resume", resume_pos);
 
-	whitgl_ivec volume_pos = {left, 16*2+13*16};
+	whitgl_ivec volume_pos = {left-offx, 16*2+13*16};
 	whitgl_sys_draw_text(text_sprite, "volume", volume_pos);
 
 	whitgl_int i;
@@ -80,20 +86,20 @@ void ld37_pause_draw(ld37_pause pause, whitgl_ivec setup_size)
 	{
 		whitgl_int t = 16*2+7*16+6*16;
 		whitgl_int left = 16*38+32*i;
-		whitgl_iaabb indicator = {{left,t},{left+1*16,t+5*16}};
+		whitgl_iaabb indicator = {{left-offx,t},{left+1*16-offx,t+5*16}};
 		whitgl_sys_color faded = {0xff,0xff,0xff,0x40};
 
 		whitgl_sys_color col = i < pause.volume ? whitgl_sys_color_white : faded;
 		whitgl_sys_draw_iaabb(indicator, col);
 	}
 
-	whitgl_ivec auto_pos = {left, 16*2+19*16};
+	whitgl_ivec auto_pos = {left-offx, 16*2+19*16};
 	whitgl_sys_draw_text(text_sprite, "autoplay", auto_pos);
 
-	whitgl_ivec exit_pos = {left, 16*2+25*16};
+	whitgl_ivec exit_pos = {left-offx, 16*2+25*16};
 	whitgl_sys_draw_text(text_sprite, "exit", exit_pos);
 
 	whitgl_float top = 16*2+7*16+6*16*pause.selected;
-	whitgl_iaabb selector = {{32,top},{32+5*16,5*16+top}};
+	whitgl_iaabb selector = {{32-offx,top},{32+5*16-offx,5*16+top}};
 	whitgl_sys_draw_iaabb(selector, whitgl_sys_color_white);
 }
