@@ -126,7 +126,7 @@ int main()
 	setup.cursor = CURSOR_HIDE;
 	// setup.fullscreen = true;
 
-	whitgl_bool autoplay = true;
+	whitgl_bool autoplay = false;
 
 	if(!whitgl_sys_init(&setup))
 		return 1;
@@ -145,7 +145,32 @@ int main()
 	whitgl_sound_init();
 	whitgl_input_init();
 
-	// whitgl_sound_add(0, "data/beam.ogg");
+	whitgl_sound_add(0, "data/sound/9.wav");
+	whitgl_sound_add(1, "data/sound/10.wav");
+	whitgl_sound_add(2, "data/sound/11.wav");
+	whitgl_sound_add(3, "data/sound/12.wav");
+	whitgl_sound_add(4, "data/sound/13.wav");
+	whitgl_sound_add(5, "data/sound/14.wav");
+	whitgl_sound_add(6, "data/sound/15.wav");
+	whitgl_sound_add(7, "data/sound/16.wav");
+	whitgl_sound_add(8, "data/sound/1.wav");
+	whitgl_sound_add(9, "data/sound/2.wav");
+	whitgl_sound_add(10, "data/sound/3.wav");
+	whitgl_sound_add(11, "data/sound/4.wav");
+	whitgl_sound_add(12, "data/sound/17.wav");
+	whitgl_sound_add(13, "data/sound/18.wav");
+	whitgl_sound_add(14, "data/sound/19.wav");
+	whitgl_sound_add(15, "data/sound/20.wav");
+	whitgl_sound_add(16, "data/sound/5.wav");
+	whitgl_sound_add(17, "data/sound/6.wav");
+	whitgl_sound_add(18, "data/sound/7.wav");
+	whitgl_sound_add(19, "data/sound/8.wav");
+	whitgl_sound_add(20, "data/sound/21.wav");
+	whitgl_sound_add(21, "data/sound/22.wav");
+	whitgl_sound_add(22, "data/sound/23.wav");
+	whitgl_sound_add(23, "data/sound/24.wav");
+
+
 	// whitgl_sys_add_image(0, "data/sprites.png");
 	whitgl_load_model(0, "data/model/room.wmd");
 
@@ -213,8 +238,17 @@ int main()
 					}
 					tanks[i] = ld37_tank_update(tanks[i], input_dir);
 				}
-			}
+				if(tanks[i].play_sound)
+				{
+					const whitgl_int sample_order[] = {0,1,2,3};
+					whitgl_int sound = i*4+sample_order[tanks[i].steps%4];
+					whitgl_float volume = (float)(i+1)/(MAX_DEPTH+1);
+					whitgl_sound_play(sound, volume/2, 1);
+					tanks[i].steps = tanks[i].steps+1;
 
+					break;
+				}
+			}
 			if(whitgl_input_pressed(WHITGL_INPUT_ESC))
 				running = false;
 			if(whitgl_sys_should_close())

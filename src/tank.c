@@ -35,6 +35,7 @@ whitgl_bool ld37_tank_valid(whitgl_ivec p)
 ld37_tank ld37_tank_update(ld37_tank tank, whitgl_int input_dir)
 {
 	tank.just_arrived = false;
+	tank.play_sound = false;
 	if(tank.transition > 0)
 	{
 		tank.transition -= 1/12.0;
@@ -72,6 +73,8 @@ ld37_tank ld37_tank_update(ld37_tank tank, whitgl_int input_dir)
 		tank.next.pos = tank.current.pos;
 		tank.transition = 0;
 	}
+	if(tank.transition == 1)
+		tank.play_sound = true;
 	return tank;
 }
 whitgl_fvec3 ld37_tank_3dpos(whitgl_ivec pos2d)
