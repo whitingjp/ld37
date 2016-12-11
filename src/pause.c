@@ -23,8 +23,11 @@ ld37_pause ld37_pause_update(ld37_pause pause)
 		whitgl_sound_play(0+8,1,1);
 	}
 	if(whitgl_input_pressed(WHITGL_INPUT_ESC))
+	{
 		pause.paused = !pause.paused;
-
+		if(!pause.paused)
+			pause.autoplay = false;
+	}
 	if(pause.selected == 1)
 	{
 		if(whitgl_input_pressed(WHITGL_INPUT_LEFT))
@@ -44,9 +47,11 @@ ld37_pause ld37_pause_update(ld37_pause pause)
 		{
 			case 0:
 				pause.paused = false;
+				pause.autoplay = false;
 				break;
 			case 2:
 				pause.autoplay = true;
+				pause.paused = false;
 				break;
 			case 3:
 				pause.should_exit = true;

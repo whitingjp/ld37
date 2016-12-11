@@ -143,8 +143,6 @@ int main()
 	setup.cursor = CURSOR_HIDE;
 	// setup.fullscreen = true;
 
-	whitgl_bool autoplay = false;
-
 	if(!whitgl_sys_init(&setup))
 		return 1;
 
@@ -227,14 +225,21 @@ int main()
 		{
 			time += 1/60.0;
 			whitgl_input_update();
+			whitgl_bool old_autoplay = pause.autoplay;
 			pause = ld37_pause_update(pause);
+			if(!old_autoplay && pause.autoplay)
+			{
+				whitgl_int i;
+				for(i=0; i<MAX_DEPTH; i++)
+					tanks[i] = ld37_tank_zero;
+			}
 			if(whitgl_sys_should_close())
 				running = false;
 			if(pause.should_exit)
 				running = false;
 			if(pause.paused || !running)
 				continue;
-			if(!autoplay)
+			if(!pause.autoplay)
 			{
 				if(whitgl_input_pressed(WHITGL_INPUT_UP)) input_queue = 0;
 				if(whitgl_input_pressed(WHITGL_INPUT_RIGHT)) input_queue = 1;
