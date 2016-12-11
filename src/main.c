@@ -78,6 +78,41 @@ static const whitgl_int automove[4][6] =
 	{3,0,2,1,-1},
 };
 
+whitgl_int get_next_autostep(ld37_tank tanks[MAX_DEPTH], whitgl_int layer)
+{
+	whitgl_int next = -1;
+	if(layer >= MAX_DEPTH)
+		return next;
+	if(!tanks[layer].autoinplace)
+	{
+		next = directions_to_mid[tanks[layer].autostep];
+		if(layer==0)
+			tanks[layer].autostep++;
+
+		if(next == -1)
+		{
+			tanks[layer].autoinplace = true;
+			tanks[layer].autostep = 0;
+		}
+	} else
+	{
+		whitgl_int move = get_next_autostep(tanks, layer+1);
+
+		if(move != -1)
+		{
+			next = automove[move][tanks[layer].autostep];
+			if(layer==0)
+				tanks[layer].autostep++;
+			if(next == -1)
+			{
+				tanks[layer+1].autostep++;
+				tanks[layer].autostep=0;
+			}
+		}
+	}
+	return next;
+}
+
 int main()
 {
 	WHITGL_LOG("Starting main.");
@@ -145,31 +180,9 @@ int main()
 				if(whitgl_input_pressed(WHITGL_INPUT_LEFT)) input_queue = 3;
 			} else
 			{
-
 				if(input_queue == -1)
 				{
-					whitgl_int next = -1;
-					if(!tanks[0].autoinplace)
-					{
-						next = directions_to_mid[tanks[0].autostep++];
-						if(next == -1)
-						{
-							tanks[0].autoinplace = true;
-							tanks[0].autostep = 0;
-						}
-					} else
-					{
-						whitgl_int move = directions_to_mid[tanks[1].autostep];
-						if(move != -1)
-						{
-							next = automove[move][tanks[0].autostep++];
-							if(next == -1)
-							{
-								tanks[1].autostep++;
-								tanks[0].autostep=0;
-							}
-						}
-					}
+					whitgl_int next =  get_next_autostep(tanks, 0);
 					if(next != -1)
 						input_queue = next;
 				}
