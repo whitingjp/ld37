@@ -52,6 +52,24 @@ void main()\
 
 #define MAX_DEPTH (6)
 
+static const whitgl_int directions_to_mid[37] =
+{
+	0,0,0,0,0,0,0,
+	1,
+	0,0,0,0,
+	3,
+	0,0,0,
+	1,
+	0,0,0,0,
+	1,
+	0,0,0,0,
+	1,
+	0,0,
+	3,
+	0,0,0,0,0,
+	0,2
+};
+
 int main()
 {
 	WHITGL_LOG("Starting main.");
@@ -64,6 +82,8 @@ int main()
 	setup.start_focused = false;
 	// setup.fullscreen = true;
 	setup.cursor = CURSOR_HIDE;
+
+	whitgl_bool autoplay = true;
 
 	if(!whitgl_sys_init(&setup))
 		return 1;
@@ -99,6 +119,8 @@ int main()
 
 	whitgl_int input_queue = -1;
 
+	whitgl_int autostep = 0;
+
 	whitgl_timer_init();
 	bool running = true;
 	while(running)
@@ -109,10 +131,19 @@ int main()
 		while(whitgl_timer_should_do_frame(60))
 		{
 			whitgl_input_update();
-			if(whitgl_input_pressed(WHITGL_INPUT_UP)) input_queue = 0;
-			if(whitgl_input_pressed(WHITGL_INPUT_RIGHT)) input_queue = 1;
-			if(whitgl_input_pressed(WHITGL_INPUT_DOWN)) input_queue = 2;
-			if(whitgl_input_pressed(WHITGL_INPUT_LEFT)) input_queue = 3;
+			if(!autoplay)
+			{
+				if(whitgl_input_pressed(WHITGL_INPUT_UP)) input_queue = 0;
+				if(whitgl_input_pressed(WHITGL_INPUT_RIGHT)) input_queue = 1;
+				if(whitgl_input_pressed(WHITGL_INPUT_DOWN)) input_queue = 2;
+				if(whitgl_input_pressed(WHITGL_INPUT_LEFT)) input_queue = 3;
+			} else
+			{
+				if(input_queue == -1 && autostep < 37)
+				{
+					input_queue = directions_to_mid[autostep++];
+				}
+			}
 			debug_camera = ld37_debug_camera_update(debug_camera);
 			for(i=0; i<MAX_DEPTH; i++)
 			{
