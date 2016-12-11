@@ -126,7 +126,7 @@ int main()
 	setup.cursor = CURSOR_HIDE;
 	// setup.fullscreen = true;
 
-	whitgl_bool autoplay = false;
+	whitgl_bool autoplay = true;
 
 	if(!whitgl_sys_init(&setup))
 		return 1;
@@ -187,14 +187,19 @@ int main()
 
 	whitgl_int input_queue = -1;
 
+	whitgl_bool finished = false;
+	whitgl_float finish_timer = 0;
+
 	whitgl_timer_init();
 	bool running = true;
+	whitgl_float fps = 12000;
+
 	while(running)
 	{
 		whitgl_sound_update();
 
 		whitgl_timer_tick();
-		while(whitgl_timer_should_do_frame(60))
+		while(whitgl_timer_should_do_frame(fps))
 		{
 			whitgl_input_update();
 			if(!autoplay)
@@ -215,6 +220,8 @@ int main()
 			debug_camera = ld37_debug_camera_update(debug_camera);
 			for(i=0; i<MAX_DEPTH; i++)
 			{
+				if(finished)
+					input_queue = -1;
 				if(i==0)
 				{
 					whitgl_int input_dir = -1;
@@ -253,6 +260,25 @@ int main()
 				running = false;
 			if(whitgl_sys_should_close())
 				running = false;
+
+			whitgl_bool should_finish = true;
+			for(i=0; i<MAX_DEPTH; i++)
+			{
+				if(tanks[i].current.pos.x > 4) should_finish = false;
+				if(tanks[i].current.pos.y > -7) should_finish = false;
+				if(tanks[i].current.facing != 3) should_finish = false;
+			}
+			if(should_finish && !finished && finish_timer < 1)
+			{
+				finished = true;
+				fps = 60;
+			}
+			if(finished)
+			{
+				finish_timer += 1/240.0;
+			}
+			// p.x <= 4 && p.y <= -7 && facing == 3
+			// WHITGL_LOG("p.x %d p.y %d facing %d", tanks[0].current.pos.x, tanks[0].current.pos.y, tanks[0].current.facing);
 		}
 
 		whitgl_fvec3 pane_verts[4] =
@@ -267,12 +293,16 @@ int main()
 		whitgl_fmat perspective = whitgl_fmat_perspective(fov, (float)setup.size.x/(float)setup.size.y, 0.01f, 32.0f);
 		// whitgl_fmat view = ld37_debug_camera_matrix(debug_camera);
 
+		whitgl_int cutoff = finish_timer*MAX_DEPTH;
 		for(i=0; i<MAX_DEPTH; i++)
 		{
 			whitgl_fmat view = ld37_tank_camera_matrix(tanks[MAX_DEPTH-i-1]);
 
 			whitgl_sys_draw_init(MAX_DEPTH-1-i);
+
 			whitgl_set_shader_uniform(WHITGL_SHADER_MODEL, 0, (MAX_DEPTH-i-1)*-0.05);
+			if(i<cutoff)
+				continue;
 			whitgl_sys_draw_model(0, whitgl_fmat_identity, view, perspective);
 			if(i>0)
 				whitgl_sys_draw_buffer_pane(MAX_DEPTH-1-i+1, pane_verts, whitgl_fmat_identity, view, perspective);
