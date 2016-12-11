@@ -50,7 +50,7 @@ void main()\
 }\
 ";
 
-#define MAX_DEPTH (8)
+#define MAX_DEPTH (6)
 
 int main()
 {
@@ -62,7 +62,8 @@ int main()
 	setup.pixel_size = 1;
 	setup.name = "main";
 	setup.start_focused = false;
-	setup.fullscreen = false;
+	// setup.fullscreen = true;
+	setup.cursor = CURSOR_HIDE;
 
 	if(!whitgl_sys_init(&setup))
 		return 1;
@@ -139,7 +140,6 @@ int main()
 					tanks[i] = ld37_tank_update(tanks[i], input_dir);
 				}
 			}
-			WHITGL_LOG("p.x %d p.y %d", tanks[0].current.pos.x, tanks[0].current.pos.y);
 
 			if(whitgl_input_pressed(WHITGL_INPUT_ESC))
 				running = false;
