@@ -9,13 +9,13 @@ import ninja_syntax
 
 
 def main():
-  target = 'ld37'
+  target = 'nest'
   srcdir = 'src'
   inputdir = joinp('whitgl', 'input')
   builddir = 'build'
   targetdir = joinp(builddir, 'out')
   if build.plat == 'Darwin':
-    packagedir = joinp(targetdir, 'LD37_whitingjp.app', 'Contents')
+    packagedir = joinp(targetdir, 'Nest.app', 'Contents')
     executabledir = joinp(packagedir, 'MacOS')
     data_out = joinp(packagedir, 'Resources', 'data')
   else:
@@ -33,7 +33,7 @@ def main():
     n.rule('windres', command='windres $in -O coff -o $out', description='windres $out')
   obj = build.walk_src(n, srcdir, objdir)
   if build.plat == 'Windows':
-    obj += n.build(joinp(objdir, 'icon.res'), 'windres', joinp(data_in, 'win', 'RoisinGarden.rc'))
+    obj += n.build(joinp(objdir, 'icon.res'), 'windres', joinp(data_in, 'win', 'Nest.rc'))
   whitgl = [joinp('whitgl','build','lib','whitgl.a')]
   targets = []
   targets += n.build(joinp(executabledir, target), 'link', obj+whitgl)
@@ -48,7 +48,7 @@ def main():
 
   if build.plat == 'Darwin':
     targets += n.build(joinp(packagedir, 'Info.plist'), 'cp', joinp(data_in, 'osx', 'Info.plist'))
-    targets += n.build(joinp(packagedir, 'Resources', 'RoisinGarden.icns'), 'cp', joinp(data_in, 'osx', 'RoisinGarden.icns'))
+    targets += n.build(joinp(packagedir, 'Resources', 'Nest.icns'), 'cp', joinp(data_in, 'osx', 'Nest.icns'))
 
   n.build('all', 'phony', targets)
   n.default('all')

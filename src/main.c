@@ -138,7 +138,7 @@ int main()
 	// setup.size.x = 64;
 	// setup.size.y = 64;
 	// setup.pixel_size = 5;
-	setup.name = "main";
+	setup.name = "Nest";
 	setup.start_focused = false;
 	setup.cursor = CURSOR_HIDE;
 	// setup.fullscreen = true;
@@ -350,12 +350,13 @@ int main()
 
 		whitgl_float fov = whitgl_pi/2.25;
 		whitgl_fmat perspective = whitgl_fmat_perspective(fov, (float)setup.size.x/(float)setup.size.y, 0.01f, 32.0f);
-		// whitgl_fmat view = ld37_debug_camera_matrix(debug_camera);
 
 		whitgl_int cutoff = finish_timer*MAX_DEPTH;
 		for(i=0; i<MAX_DEPTH; i++)
 		{
 			whitgl_fmat view = ld37_tank_camera_matrix(tanks[MAX_DEPTH-i-1]);
+			// if(i==MAX_DEPTH-1)
+			// 	view = ld37_debug_camera_matrix(debug_camera);
 
 			whitgl_sys_draw_init(MAX_DEPTH-1-i);
 

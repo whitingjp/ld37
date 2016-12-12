@@ -5,15 +5,15 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
-	<string>garden</string>
+	<string>nest</string>
 	<key>CFBundleIconFile</key>
-	<string>RoisinGarden</string>
+	<string>Nest</string>
 	<key>CFBundleIdentifier</key>
-	<string>whitingjp.RoisinGarden</string>
+	<string>whitingjp.Nest</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>RoisinGarden</string>
+	<string>Nest</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

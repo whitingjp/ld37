@@ -1,6 +1,6 @@
 #!/bin/bash
-killall ld37
+killall nest
 args=$(<args.txt)
 set -e
 ./whitgl/scripts/build.sh
-(cd build/out/LD37_whitingjp.app/Contents/MacOS; ./ld37 hotreload $args "$@" &)
+(cd build/out/Nest.app/Contents/MacOS; ./nest hotreload $args "$@" &)
