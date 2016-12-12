@@ -33,7 +33,7 @@ def main():
     n.rule('windres', command='windres $in -O coff -o $out', description='windres $out')
   obj = build.walk_src(n, srcdir, objdir)
   if build.plat == 'Windows':
-    obj += n.build(joinp(objdir, 'icon.res'), 'windres', joinp(data_in, 'win', 'Nest.rc'))
+    obj += n.build(joinp(objdir, 'icon.res'), 'windres', joinp(data_in, 'win', 'nest.rc'))
   whitgl = [joinp('whitgl','build','lib','whitgl.a')]
   targets = []
   targets += n.build(joinp(executabledir, target), 'link', obj+whitgl)
