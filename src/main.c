@@ -135,13 +135,10 @@ int main()
 	setup.size.x = 16*64;
 	setup.size.y = 9*64;
 	setup.pixel_size = 1;
-	// setup.size.x = 64;
-	// setup.size.y = 64;
-	// setup.pixel_size = 5;
 	setup.name = "Nest";
 	setup.start_focused = false;
 	setup.cursor = CURSOR_HIDE;
-	// setup.fullscreen = true;
+	setup.fullscreen = true;
 
 	if(!whitgl_sys_init(&setup))
 		return 1;
@@ -214,6 +211,8 @@ int main()
 
 	whitgl_float time = 0;
 
+	whitgl_bool any_pressed = false;
+	whitgl_float title_transition = 0;
 
 	ld37_pause pause = ld37_pause_zero;
 
@@ -239,6 +238,18 @@ int main()
 			}
 			time += 1/60.0;
 			whitgl_input_update();
+			if(whitgl_input_pressed(WHITGL_INPUT_UP))
+				any_pressed = true;
+			if(whitgl_input_pressed(WHITGL_INPUT_RIGHT))
+				any_pressed = true;
+			if(whitgl_input_pressed(WHITGL_INPUT_DOWN))
+				any_pressed = true;
+			if(whitgl_input_pressed(WHITGL_INPUT_LEFT))
+				any_pressed = true;
+			if(whitgl_input_pressed(WHITGL_INPUT_ESC))
+				any_pressed = true;
+			if(any_pressed)
+				title_transition = whitgl_fclamp(title_transition+0.1, 0, 1);
 			whitgl_bool old_autoplay = pause.autoplay;
 			pause = ld37_pause_update(pause);
 			if(!old_autoplay && pause.autoplay)
@@ -368,6 +379,11 @@ int main()
 		}
 
 		ld37_pause_draw(pause, setup.size);
+
+		whitgl_sprite text_sprite = {0, {0,0}, {5*16,5*16}};
+		whitgl_float trans = title_transition*title_transition;
+		whitgl_ivec nest_pos = {setup.size.x/2-(text_sprite.size.x/2.0)*4+trans*setup.size.y, setup.size.y/4-(text_sprite.size.y/4.0)};
+		whitgl_sys_draw_text(text_sprite, "nest", nest_pos);
 
 		whitgl_sys_draw_finish();
 
