@@ -136,7 +136,6 @@ int main()
 	setup.size.y = 9*64;
 	setup.pixel_size = 1;
 	setup.name = "Nest";
-	setup.start_focused = false;
 	setup.cursor = CURSOR_HIDE;
 	setup.fullscreen = true;
 
@@ -388,8 +387,8 @@ int main()
 		whitgl_sys_draw_finish();
 
 
-		if(!whitgl_sys_window_focused())
-			usleep(10000);
+		//if(!whitgl_sys_window_focused())
+		//	usleep(10000);
 	}
 
 	whitgl_input_shutdown();
