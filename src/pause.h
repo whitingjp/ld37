@@ -15,7 +15,7 @@ typedef struct
 	whitgl_float transition;
 } ld37_pause;
 
-static const ld37_pause ld37_pause_zero = {0,7,false,false,false,true,0};
+static const ld37_pause ld37_pause_zero = {0,7,false,false,false,false,0};
 
 ld37_pause ld37_pause_update(ld37_pause pause);
 void ld37_pause_draw(ld37_pause pause, whitgl_ivec setup_size);
