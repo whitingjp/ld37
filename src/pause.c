@@ -71,7 +71,7 @@ ld37_pause ld37_pause_update(ld37_pause pause)
 void ld37_pause_draw(ld37_pause pause, whitgl_ivec setup_size)
 {
 	whitgl_float pt = 1-pause.transition;
-	whitgl_float offy = pt*pt*setup_size.y/4;
+	whitgl_float offy = pt*pt*setup_size.y;
 	whitgl_float offx = pt*pt*setup_size.x;
 
 	whitgl_sprite text_sprite = {0, {0,0}, {5*16,5*16}};

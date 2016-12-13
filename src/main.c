@@ -10,6 +10,7 @@
 #include <whitgl/sys.h>
 #include <whitgl/timer.h>
 
+#include <capture.h>
 #include <debug_camera.h>
 #include <tank.h>
 #include <pause.h>
@@ -214,6 +215,7 @@ int main()
 	whitgl_float title_transition = 0;
 
 	ld37_pause pause = ld37_pause_zero;
+	// capture_info capture = capture_info_zero; 
 
 	while(running)
 	{
@@ -237,6 +239,8 @@ int main()
 			}
 			time += 1/60.0;
 			whitgl_input_update();
+			// capture = capture_info_update(capture);
+
 			if(whitgl_input_pressed(WHITGL_INPUT_UP))
 				any_pressed = true;
 			if(whitgl_input_pressed(WHITGL_INPUT_RIGHT))
@@ -381,7 +385,7 @@ int main()
 
 		whitgl_sprite text_sprite = {0, {0,0}, {5*16,5*16}};
 		whitgl_float trans = title_transition*title_transition;
-		whitgl_ivec nest_pos = {setup.size.x/2-(text_sprite.size.x/2.0)*4+trans*setup.size.y, setup.size.y/4-(text_sprite.size.y/4.0)};
+		whitgl_ivec nest_pos = {setup.size.x/2-(text_sprite.size.x/2.0)*4+trans*setup.size.x, setup.size.y/4-(text_sprite.size.y/4.0)};
 		whitgl_sys_draw_text(text_sprite, "nest", nest_pos);
 
 		whitgl_sys_draw_finish();
