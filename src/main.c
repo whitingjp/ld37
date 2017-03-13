@@ -118,24 +118,33 @@ void record_rewinder(ld37_rewinder* rewinder, ld37_tank tanks[MAX_DEPTH])
 }
 void update_rewinder(ld37_rewinder* rewinder, ld37_tank tanks[MAX_DEPTH])
 {
-	if(whitgl_input_down(WHITGL_INPUT_ANY))
+	whitgl_bool manual_rewind = false;
+	if(whitgl_input_down(WHITGL_INPUT_ESC) || whitgl_input_down(WHITGL_INPUT_Y))
+		manual_rewind = true;
+	if(whitgl_input_down(WHITGL_INPUT_ANY) && !manual_rewind)
 	{
 		rewinder->countdown = 0;
-		rewinder->rewinding = false;
 		rewinder->rewind_speed = 0;
-		return;
 	}
 	rewinder->countdown += 1.0/(60.0*3);
-	if(rewinder->countdown > 1 && !rewinder->rewinding)
+	whitgl_bool should_rewind = false;
+	if(rewinder->countdown > 1)
+		should_rewind = true;
+	if(manual_rewind)
+		should_rewind = true;
+	if(should_rewind && !rewinder->rewinding)
 	{
 		record_rewinder(rewinder, tanks);
 		rewinder->rewinding = true;
 	}
+	if(!should_rewind)
+		rewinder->rewinding = false;
+
 	if(!rewinder->rewinding)
 		return;
 
 	rewinder->timer += 1/12.0;
-	rewinder->rewind_speed = whitgl_fclamp(rewinder->rewind_speed+0.001, 1, 4);
+	rewinder->rewind_speed = whitgl_fclamp(rewinder->rewind_speed+0.004, 1, 4);
 
 	while(rewinder->timer > 1)
 	{
@@ -326,6 +335,8 @@ int main()
 			}
 			time += 1/60.0;
 			whitgl_input_update();
+			if(event_mode && rewinder.rewinding)
+				any_pressed = false;
 			if(whitgl_input_pressed(WHITGL_INPUT_UP))
 				any_pressed = true;
 			if(whitgl_input_pressed(WHITGL_INPUT_RIGHT))
@@ -334,14 +345,15 @@ int main()
 				any_pressed = true;
 			if(whitgl_input_pressed(WHITGL_INPUT_LEFT))
 				any_pressed = true;
-			if(whitgl_input_pressed(WHITGL_INPUT_ESC))
+			if(whitgl_input_pressed(WHITGL_INPUT_ESC) && !event_mode)
 				any_pressed = true;
 			if(any_pressed)
 				title_transition = whitgl_fclamp(title_transition+0.1, 0, 1);
 			if(rewinder.rewinding && rewinder.step <= 1)
 				title_transition = whitgl_fclamp(title_transition-0.2, 0, 1);
 			whitgl_bool old_autoplay = pause.autoplay;
-			pause = ld37_pause_update(pause);
+			if(!event_mode)
+				pause = ld37_pause_update(pause);
 			if(!old_autoplay && pause.autoplay)
 			{
 				whitgl_int i;
