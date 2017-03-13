@@ -93,6 +93,105 @@ static const whitgl_int automove[4][6] =
 	{3,0,2,1,-1},
 };
 
+#define MAX_HISTORY (1024)
+typedef struct
+{
+	ld37_location history[MAX_HISTORY][MAX_DEPTH];
+	whitgl_float countdown;
+	whitgl_bool rewinding;
+	whitgl_int step;
+	whitgl_float timer;
+	whitgl_float rewind_speed;
+	whitgl_int depth_recorded;
+	whitgl_float reset_trans;
+} ld37_rewinder;
+static const ld37_rewinder ld37_rewinder_zero = {{}, 0, false, 0, -5, 0, 0, 1};
+
+void record_rewinder(ld37_rewinder* rewinder, ld37_tank tanks[MAX_DEPTH])
+{
+	whitgl_int i;
+	for(i=0; i<MAX_DEPTH; i++)
+	{
+		rewinder->history[rewinder->step][i] = tanks[i].next;
+	}
+	rewinder->step++;
+	if(rewinder->step >= MAX_HISTORY)
+		rewinder->step = MAX_HISTORY-1; // just re-use final one forever
+}
+void update_rewinder(ld37_rewinder* rewinder, ld37_tank tanks[MAX_DEPTH])
+{
+	whitgl_bool manual_rewind = false;
+	if(whitgl_input_down(WHITGL_INPUT_ESC) || whitgl_input_down(WHITGL_INPUT_Y))
+		manual_rewind = true;
+	if(whitgl_input_down(WHITGL_INPUT_ANY) && !manual_rewind)
+	{
+		rewinder->countdown = 0;
+		rewinder->timer = -2;
+		rewinder->rewind_speed = 0;
+	}
+	rewinder->countdown += 1.0/(60.0*30);
+	whitgl_bool should_rewind = false;
+	if(rewinder->countdown > 1)
+		should_rewind = true;
+	if(manual_rewind)
+		should_rewind = true;
+	if(rewinder->step <= 1)
+	{
+		should_rewind = false;
+		rewinder->depth_recorded = 0;
+		rewinder->rewind_speed = 1;
+	}
+	if(should_rewind && !rewinder->rewinding)
+	{
+		record_rewinder(rewinder, tanks);
+		rewinder->rewinding = true;
+	}
+	if(!should_rewind)
+		rewinder->rewinding = false;
+
+	if(rewinder->rewinding)
+		rewinder->reset_trans = whitgl_fclamp(rewinder->reset_trans-0.2,0,1);
+	else
+		rewinder->reset_trans = whitgl_fclamp(rewinder->reset_trans+0.2,0,1);
+
+	if(!rewinder->rewinding)
+		return;
+
+	rewinder->timer += 1/12.0;
+	if(rewinder->step > 5)
+		rewinder->rewind_speed = whitgl_fclamp(rewinder->rewind_speed+0.004, 1, 4);
+	else
+		rewinder->rewind_speed = whitgl_fclamp(rewinder->rewind_speed-0.01, 1, 4);
+
+	while(rewinder->timer > 1)
+	{
+		rewinder->timer-=1;
+		if(rewinder->step <= 1)
+		{
+			rewinder->step = 1;
+			rewinder->rewind_speed = 1;
+			rewinder->depth_recorded = 0;
+			break;
+		}
+		rewinder->step--;
+
+
+		whitgl_int i;
+		for(i=0; i<MAX_DEPTH; i++)
+		{
+			whitgl_int next_step = rewinder->step-1;
+			if(next_step < 0)
+				next_step = 0;
+			tanks[i].current = rewinder->history[rewinder->step][i];
+			tanks[i].next = rewinder->history[next_step][i];
+			tanks[i].transition = 1;
+		}
+	}
+}
+
+ld37_rewinder rewinder;
+
+
 whitgl_int get_next_autostep(ld37_tank tanks[MAX_DEPTH], whitgl_int layer)
 {
 	whitgl_int next = -1;
@@ -131,6 +230,8 @@ whitgl_int get_next_autostep(ld37_tank tanks[MAX_DEPTH], whitgl_int layer)
 int main()
 {
 	WHITGL_LOG("Starting main.");
+
+	whitgl_bool event_mode = true;
 
 	whitgl_sys_setup setup = whitgl_sys_setup_zero;
 	setup.size.x = 16*64;
@@ -217,6 +318,8 @@ int main()
 	ld37_pause pause = ld37_pause_zero;
 	// capture_info capture = capture_info_zero; 
 
+	rewinder = ld37_rewinder_zero;
+	record_rewinder(&rewinder, tanks);
 	while(running)
 	{
 		whitgl_sound_update();
@@ -224,11 +327,22 @@ int main()
 		whitgl_timer_tick();
 		while(whitgl_timer_should_do_frame(fps))
 		{
+			if(event_mode)
+				update_rewinder(&rewinder, tanks);
 			fps = 60;
 			if(!pause.paused && pause.autoplay && !finished && whitgl_input_down(WHITGL_INPUT_A))
 				fps *= 4;
 			if(!pause.paused && pause.autoplay && !finished && whitgl_input_down(WHITGL_INPUT_B))
 				fps *= 4;
+			if(rewinder.rewinding)
+			{
+				fps = 60*rewinder.rewind_speed;
+			}
+			if(finished && rewinder.rewinding)
+			{
+				finished = false;
+				finish_timer = 0;
+			}
 			if(finished && finish_timer > 1.2 && pause.paused)
 			{
 				finished = false;
@@ -239,8 +353,8 @@ int main()
 			}
 			time += 1/60.0;
 			whitgl_input_update();
-			// capture = capture_info_update(capture);
-
+			if(event_mode && rewinder.rewinding)
+				any_pressed = false;
 			if(whitgl_input_pressed(WHITGL_INPUT_UP))
 				any_pressed = true;
 			if(whitgl_input_pressed(WHITGL_INPUT_RIGHT))
@@ -249,12 +363,15 @@ int main()
 				any_pressed = true;
 			if(whitgl_input_pressed(WHITGL_INPUT_LEFT))
 				any_pressed = true;
-			if(whitgl_input_pressed(WHITGL_INPUT_ESC))
+			if(whitgl_input_pressed(WHITGL_INPUT_ESC) && !event_mode)
 				any_pressed = true;
 			if(any_pressed)
 				title_transition = whitgl_fclamp(title_transition+0.1, 0, 1);
+			else if(rewinder.step <= 1)
+				title_transition = whitgl_fclamp(title_transition-0.2, 0, 1);
 			whitgl_bool old_autoplay = pause.autoplay;
-			pause = ld37_pause_update(pause);
+			if(!event_mode)
+				pause = ld37_pause_update(pause);
 			if(!old_autoplay && pause.autoplay)
 			{
 				whitgl_int i;
@@ -269,10 +386,13 @@ int main()
 				continue;
 			if(!pause.autoplay)
 			{
-				if(whitgl_input_pressed(WHITGL_INPUT_UP)) input_queue = 0;
-				if(whitgl_input_pressed(WHITGL_INPUT_RIGHT)) input_queue = 1;
-				if(whitgl_input_pressed(WHITGL_INPUT_DOWN)) input_queue = 2;
-				if(whitgl_input_pressed(WHITGL_INPUT_LEFT)) input_queue = 3;
+				whitgl_bool vertical = whitgl_input_down(WHITGL_INPUT_UP) || whitgl_input_down(WHITGL_INPUT_DOWN);
+				whitgl_bool horizontal = whitgl_input_down(WHITGL_INPUT_LEFT) || whitgl_input_down(WHITGL_INPUT_RIGHT);
+
+				if(whitgl_input_pressed(WHITGL_INPUT_UP) && !horizontal) input_queue = 0;
+				if(whitgl_input_pressed(WHITGL_INPUT_RIGHT) && !vertical) input_queue = 1;
+				if(whitgl_input_pressed(WHITGL_INPUT_DOWN) && !horizontal) input_queue = 2;
+				if(whitgl_input_pressed(WHITGL_INPUT_LEFT) && !vertical) input_queue = 3;
 			} else
 			{
 				if(input_queue == -1)
@@ -283,6 +403,7 @@ int main()
 				}
 			}
 			debug_camera = ld37_debug_camera_update(debug_camera);
+			// whitgl_int old_input_queue = input_queue;
 			for(i=0; i<MAX_DEPTH; i++)
 			{
 				if(finished)
@@ -296,6 +417,11 @@ int main()
 						input_queue = -1;
 					}
 					tanks[i] = ld37_tank_update(tanks[i], input_dir);
+					if(tanks[i].transition == 1 && rewinder.depth_recorded <= i && event_mode)
+					{
+						rewinder.depth_recorded = i;
+						record_rewinder(&rewinder, tanks);
+					}
 				}
 				else
 				{
@@ -309,6 +435,11 @@ int main()
 						if(pos.x == 2 && pos.y==-10) input_dir = 3;
 					}
 					tanks[i] = ld37_tank_update(tanks[i], input_dir);
+					if(tanks[i].transition == 1 && rewinder.depth_recorded <= i && event_mode)
+					{
+						rewinder.depth_recorded = i;
+						record_rewinder(&rewinder, tanks);
+					}
 				}
 				if(tanks[i].play_sound)
 				{
@@ -387,6 +518,10 @@ int main()
 		whitgl_float trans = title_transition*title_transition;
 		whitgl_ivec nest_pos = {setup.size.x/2-(text_sprite.size.x/2.0)*4+trans*setup.size.x, setup.size.y/4-(text_sprite.size.y/4.0)};
 		whitgl_sys_draw_text(text_sprite, "nest", nest_pos);
+
+
+		whitgl_ivec reset_pos = {setup.size.x/2-(text_sprite.size.x/2.0)*5, (setup.size.y*3)/4-text_sprite.size.y/2+rewinder.reset_trans*rewinder.reset_trans*(setup.size.y/4+text_sprite.size.y)};
+		whitgl_sys_draw_text(text_sprite, "reset", reset_pos);
 
 		whitgl_sys_draw_finish();
 

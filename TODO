@@ -1,4 +1,5 @@
-Website
-Windows Build
-Submit
-
+Autoreset feature:
+  Record moves and reverse them after n seconds
+  Give some sort of warning that reverse is about to happen
+  Allow reverse to be interrupted?
+  Consider disabling (some?) menu stuff.
