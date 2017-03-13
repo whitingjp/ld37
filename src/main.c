@@ -138,7 +138,7 @@ int main()
 	setup.name = "Nest";
 	setup.start_focused = false;
 	setup.cursor = CURSOR_HIDE;
-	setup.fullscreen = true;
+	setup.fullscreen = false;
 
 	if(!whitgl_sys_init(&setup))
 		return 1;
@@ -382,7 +382,7 @@ int main()
 
 		whitgl_sprite text_sprite = {0, {0,0}, {5*16,5*16}};
 		whitgl_float trans = title_transition*title_transition;
-		whitgl_ivec nest_pos = {setup.size.x/2-(text_sprite.size.x/2.0)*4+trans*setup.size.y, setup.size.y/4-(text_sprite.size.y/4.0)};
+		whitgl_ivec nest_pos = {setup.size.x/2-(text_sprite.size.x/2.0)*4+trans*setup.size.x, setup.size.y/4-(text_sprite.size.y/4.0)};
 		whitgl_sys_draw_text(text_sprite, "nest", nest_pos);
 
 		whitgl_sys_draw_finish();
