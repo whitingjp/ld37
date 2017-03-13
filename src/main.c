@@ -102,8 +102,9 @@ typedef struct
 	whitgl_float timer;
 	whitgl_float rewind_speed;
 	whitgl_int depth_recorded;
+	whitgl_float reset_trans;
 } ld37_rewinder;
-static const ld37_rewinder ld37_rewinder_zero = {{}, 0, false, 0, 0, 0, 0};
+static const ld37_rewinder ld37_rewinder_zero = {{}, 0, false, 0, -5, 0, 0, 1};
 
 void record_rewinder(ld37_rewinder* rewinder, ld37_tank tanks[MAX_DEPTH])
 {
@@ -124,14 +125,17 @@ void update_rewinder(ld37_rewinder* rewinder, ld37_tank tanks[MAX_DEPTH])
 	if(whitgl_input_down(WHITGL_INPUT_ANY) && !manual_rewind)
 	{
 		rewinder->countdown = 0;
+		rewinder->timer = -2;
 		rewinder->rewind_speed = 0;
 	}
-	rewinder->countdown += 1.0/(60.0*3);
+	rewinder->countdown += 1.0/(60.0*30);
 	whitgl_bool should_rewind = false;
 	if(rewinder->countdown > 1)
 		should_rewind = true;
 	if(manual_rewind)
 		should_rewind = true;
+	if(rewinder->step <= 1)
+		should_rewind = false;
 	if(should_rewind && !rewinder->rewinding)
 	{
 		record_rewinder(rewinder, tanks);
@@ -139,6 +143,11 @@ void update_rewinder(ld37_rewinder* rewinder, ld37_tank tanks[MAX_DEPTH])
 	}
 	if(!should_rewind)
 		rewinder->rewinding = false;
+
+	if(rewinder->rewinding)
+		rewinder->reset_trans = whitgl_fclamp(rewinder->reset_trans-0.2,0,1);
+	else
+		rewinder->reset_trans = whitgl_fclamp(rewinder->reset_trans+0.2,0,1);
 
 	if(!rewinder->rewinding)
 		return;
@@ -157,6 +166,7 @@ void update_rewinder(ld37_rewinder* rewinder, ld37_tank tanks[MAX_DEPTH])
 			break;
 		}
 		rewinder->step--;
+
 
 		whitgl_int i;
 		for(i=0; i<MAX_DEPTH; i++)
@@ -349,7 +359,7 @@ int main()
 				any_pressed = true;
 			if(any_pressed)
 				title_transition = whitgl_fclamp(title_transition+0.1, 0, 1);
-			if(rewinder.rewinding && rewinder.step <= 1)
+			else if(rewinder.step <= 1)
 				title_transition = whitgl_fclamp(title_transition-0.2, 0, 1);
 			whitgl_bool old_autoplay = pause.autoplay;
 			if(!event_mode)
@@ -497,6 +507,10 @@ int main()
 		whitgl_float trans = title_transition*title_transition;
 		whitgl_ivec nest_pos = {setup.size.x/2-(text_sprite.size.x/2.0)*4+trans*setup.size.x, setup.size.y/4-(text_sprite.size.y/4.0)};
 		whitgl_sys_draw_text(text_sprite, "nest", nest_pos);
+
+
+		whitgl_ivec reset_pos = {setup.size.x/2-(text_sprite.size.x/2.0)*5, (setup.size.y*3)/4-text_sprite.size.y/2+rewinder.reset_trans*rewinder.reset_trans*(setup.size.y/4+text_sprite.size.y)};
+		whitgl_sys_draw_text(text_sprite, "reset", reset_pos);
 
 		whitgl_sys_draw_finish();
 
