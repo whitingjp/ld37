@@ -135,7 +135,11 @@ void update_rewinder(ld37_rewinder* rewinder, ld37_tank tanks[MAX_DEPTH])
 	if(manual_rewind)
 		should_rewind = true;
 	if(rewinder->step <= 1)
+	{
 		should_rewind = false;
+		rewinder->depth_recorded = 0;
+		rewinder->rewind_speed = 1;
+	}
 	if(should_rewind && !rewinder->rewinding)
 	{
 		record_rewinder(rewinder, tanks);
@@ -153,7 +157,10 @@ void update_rewinder(ld37_rewinder* rewinder, ld37_tank tanks[MAX_DEPTH])
 		return;
 
 	rewinder->timer += 1/12.0;
-	rewinder->rewind_speed = whitgl_fclamp(rewinder->rewind_speed+0.004, 1, 4);
+	if(rewinder->step > 5)
+		rewinder->rewind_speed = whitgl_fclamp(rewinder->rewind_speed+0.004, 1, 4);
+	else
+		rewinder->rewind_speed = whitgl_fclamp(rewinder->rewind_speed-0.01, 1, 4);
 
 	while(rewinder->timer > 1)
 	{
@@ -232,7 +239,7 @@ int main()
 	setup.name = "Nest";
 	setup.start_focused = false;
 	setup.cursor = CURSOR_HIDE;
-	setup.fullscreen = false;
+	setup.fullscreen = true;
 
 	if(!whitgl_sys_init(&setup))
 		return 1;
@@ -378,10 +385,13 @@ int main()
 				continue;
 			if(!pause.autoplay)
 			{
-				if(whitgl_input_pressed(WHITGL_INPUT_UP)) input_queue = 0;
-				if(whitgl_input_pressed(WHITGL_INPUT_RIGHT)) input_queue = 1;
-				if(whitgl_input_pressed(WHITGL_INPUT_DOWN)) input_queue = 2;
-				if(whitgl_input_pressed(WHITGL_INPUT_LEFT)) input_queue = 3;
+				whitgl_bool vertical = whitgl_input_down(WHITGL_INPUT_UP) || whitgl_input_down(WHITGL_INPUT_DOWN);
+				whitgl_bool horizontal = whitgl_input_down(WHITGL_INPUT_LEFT) || whitgl_input_down(WHITGL_INPUT_RIGHT);
+
+				if(whitgl_input_pressed(WHITGL_INPUT_UP) && !horizontal) input_queue = 0;
+				if(whitgl_input_pressed(WHITGL_INPUT_RIGHT) && !vertical) input_queue = 1;
+				if(whitgl_input_pressed(WHITGL_INPUT_DOWN) && !horizontal) input_queue = 2;
+				if(whitgl_input_pressed(WHITGL_INPUT_LEFT) && !vertical) input_queue = 3;
 			} else
 			{
 				if(input_queue == -1)
