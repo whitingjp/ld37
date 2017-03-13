@@ -92,6 +92,79 @@ static const whitgl_int automove[4][6] =
 	{3,0,2,1,-1},
 };
 
+#define MAX_HISTORY (1024)
+typedef struct
+{
+	ld37_location history[MAX_HISTORY][MAX_DEPTH];
+	whitgl_float countdown;
+	whitgl_bool rewinding;
+	whitgl_int step;
+	whitgl_float timer;
+	whitgl_float rewind_speed;
+	whitgl_int depth_recorded;
+} ld37_rewinder;
+static const ld37_rewinder ld37_rewinder_zero = {{}, 0, false, 0, 0, 0, 0};
+
+void record_rewinder(ld37_rewinder* rewinder, ld37_tank tanks[MAX_DEPTH])
+{
+	whitgl_int i;
+	for(i=0; i<MAX_DEPTH; i++)
+	{
+		rewinder->history[rewinder->step][i] = tanks[i].next;
+	}
+	rewinder->step++;
+	if(rewinder->step >= MAX_HISTORY)
+		rewinder->step = MAX_HISTORY-1; // just re-use final one forever
+}
+void update_rewinder(ld37_rewinder* rewinder, ld37_tank tanks[MAX_DEPTH])
+{
+	if(whitgl_input_down(WHITGL_INPUT_ANY))
+	{
+		rewinder->countdown = 0;
+		rewinder->rewinding = false;
+		rewinder->rewind_speed = 0;
+		return;
+	}
+	rewinder->countdown += 1.0/(60.0*3);
+	if(rewinder->countdown > 1 && !rewinder->rewinding)
+	{
+		record_rewinder(rewinder, tanks);
+		rewinder->rewinding = true;
+	}
+	if(!rewinder->rewinding)
+		return;
+
+	rewinder->timer += 1/12.0;
+	rewinder->rewind_speed = whitgl_fclamp(rewinder->rewind_speed+0.001, 1, 4);
+
+	while(rewinder->timer > 1)
+	{
+		rewinder->timer-=1;
+		if(rewinder->step <= 1)
+		{
+			rewinder->step = 1;
+			rewinder->rewind_speed = 1;
+			rewinder->depth_recorded = 0;
+			break;
+		}
+		rewinder->step--;
+
+		whitgl_int i;
+		for(i=0; i<MAX_DEPTH; i++)
+		{
+			whitgl_int next_step = rewinder->step-1;
+			if(next_step < 0)
+				next_step = 0;
+			tanks[i].current = rewinder->history[rewinder->step][i];
+			tanks[i].next = rewinder->history[next_step][i];
+			tanks[i].transition = 1;
+		}
+	}
+}
+
+ld37_rewinder rewinder;
+
+
 whitgl_int get_next_autostep(ld37_tank tanks[MAX_DEPTH], whitgl_int layer)
 {
 	whitgl_int next = -1;
@@ -130,6 +203,8 @@ whitgl_int get_next_autostep(ld37_tank tanks[MAX_DEPTH], whitgl_int layer)
 int main()
 {
 	WHITGL_LOG("Starting main.");
+
+	whitgl_bool event_mode = true;
 
 	whitgl_sys_setup setup = whitgl_sys_setup_zero;
 	setup.size.x = 16*64;
@@ -216,6 +291,8 @@ int main()
 
 	ld37_pause pause = ld37_pause_zero;
 
+	rewinder = ld37_rewinder_zero;
+	record_rewinder(&rewinder, tanks);
 	while(running)
 	{
 		whitgl_sound_update();
@@ -223,11 +300,22 @@ int main()
 		whitgl_timer_tick();
 		while(whitgl_timer_should_do_frame(fps))
 		{
+			if(event_mode)
+				update_rewinder(&rewinder, tanks);
 			fps = 60;
 			if(!pause.paused && pause.autoplay && !finished && whitgl_input_down(WHITGL_INPUT_A))
 				fps *= 4;
 			if(!pause.paused && pause.autoplay && !finished && whitgl_input_down(WHITGL_INPUT_B))
 				fps *= 4;
+			if(rewinder.rewinding)
+			{
+				fps = 60*rewinder.rewind_speed;
+			}
+			if(finished && rewinder.rewinding)
+			{
+				finished = false;
+				finish_timer = 0;
+			}
 			if(finished && finish_timer > 1.2 && pause.paused)
 			{
 				finished = false;
@@ -250,6 +338,8 @@ int main()
 				any_pressed = true;
 			if(any_pressed)
 				title_transition = whitgl_fclamp(title_transition+0.1, 0, 1);
+			if(rewinder.rewinding && rewinder.step <= 1)
+				title_transition = whitgl_fclamp(title_transition-0.2, 0, 1);
 			whitgl_bool old_autoplay = pause.autoplay;
 			pause = ld37_pause_update(pause);
 			if(!old_autoplay && pause.autoplay)
@@ -280,6 +370,7 @@ int main()
 				}
 			}
 			debug_camera = ld37_debug_camera_update(debug_camera);
+			// whitgl_int old_input_queue = input_queue;
 			for(i=0; i<MAX_DEPTH; i++)
 			{
 				if(finished)
@@ -293,6 +384,11 @@ int main()
 						input_queue = -1;
 					}
 					tanks[i] = ld37_tank_update(tanks[i], input_dir);
+					if(tanks[i].transition == 1 && rewinder.depth_recorded <= i && event_mode)
+					{
+						rewinder.depth_recorded = i;
+						record_rewinder(&rewinder, tanks);
+					}
 				}
 				else
 				{
@@ -306,6 +402,11 @@ int main()
 						if(pos.x == 2 && pos.y==-10) input_dir = 3;
 					}
 					tanks[i] = ld37_tank_update(tanks[i], input_dir);
+					if(tanks[i].transition == 1 && rewinder.depth_recorded <= i && event_mode)
+					{
+						rewinder.depth_recorded = i;
+						record_rewinder(&rewinder, tanks);
+					}
 				}
 				if(tanks[i].play_sound)
 				{
