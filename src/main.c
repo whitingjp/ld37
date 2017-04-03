@@ -120,9 +120,9 @@ void record_rewinder(ld37_rewinder* rewinder, ld37_tank tanks[MAX_DEPTH])
 void update_rewinder(ld37_rewinder* rewinder, ld37_tank tanks[MAX_DEPTH])
 {
 	whitgl_bool manual_rewind = false;
-	if(whitgl_input_down(WHITGL_INPUT_ESC) || whitgl_input_down(WHITGL_INPUT_Y))
+	if(whitgl_input_held(WHITGL_INPUT_ESC) || whitgl_input_held(WHITGL_INPUT_Y))
 		manual_rewind = true;
-	if(whitgl_input_down(WHITGL_INPUT_ANY) && !manual_rewind)
+	if(whitgl_input_held(WHITGL_INPUT_ANY) && !manual_rewind)
 	{
 		rewinder->countdown = 0;
 		rewinder->timer = -2;
@@ -230,7 +230,7 @@ int main()
 {
 	WHITGL_LOG("Starting main.");
 
-	whitgl_bool event_mode = true;
+	whitgl_bool event_mode = false;
 
 	whitgl_sys_setup setup = whitgl_sys_setup_zero;
 	setup.size.x = 16*64;
@@ -240,9 +240,12 @@ int main()
 	setup.start_focused = false;
 	setup.cursor = CURSOR_HIDE;
 	setup.fullscreen = true;
+	setup.num_framebuffers = 6;
 
 	if(!whitgl_sys_init(&setup))
 		return 1;
+
+	whitgl_sys_enable_depth(true);
 
 	whitgl_shader model_shader = whitgl_shader_zero;
 	model_shader.fragment_src = model_src;
@@ -329,9 +332,9 @@ int main()
 			if(event_mode)
 				update_rewinder(&rewinder, tanks);
 			fps = 60;
-			if(!pause.paused && pause.autoplay && !finished && whitgl_input_down(WHITGL_INPUT_A))
+			if(!pause.paused && pause.autoplay && !finished && whitgl_input_held(WHITGL_INPUT_A))
 				fps *= 4;
-			if(!pause.paused && pause.autoplay && !finished && whitgl_input_down(WHITGL_INPUT_B))
+			if(!pause.paused && pause.autoplay && !finished && whitgl_input_held(WHITGL_INPUT_B))
 				fps *= 4;
 			if(rewinder.rewinding)
 			{
@@ -385,8 +388,8 @@ int main()
 				continue;
 			if(!pause.autoplay)
 			{
-				whitgl_bool vertical = whitgl_input_down(WHITGL_INPUT_UP) || whitgl_input_down(WHITGL_INPUT_DOWN);
-				whitgl_bool horizontal = whitgl_input_down(WHITGL_INPUT_LEFT) || whitgl_input_down(WHITGL_INPUT_RIGHT);
+				whitgl_bool vertical = whitgl_input_held(WHITGL_INPUT_UP) || whitgl_input_held(WHITGL_INPUT_DOWN);
+				whitgl_bool horizontal = whitgl_input_held(WHITGL_INPUT_LEFT) || whitgl_input_held(WHITGL_INPUT_RIGHT);
 
 				if(whitgl_input_pressed(WHITGL_INPUT_UP) && !horizontal) input_queue = 0;
 				if(whitgl_input_pressed(WHITGL_INPUT_RIGHT) && !vertical) input_queue = 1;

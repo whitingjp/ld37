@@ -11,9 +11,9 @@ ld37_debug_camera ld37_debug_camera_update(ld37_debug_camera camera)
 	whitgl_fvec facing = whitgl_fvec_from_angle(-camera.yaw);
 	whitgl_fvec3 forwards = {facing.x, 0, facing.y};
 	camera.pos = whitgl_fvec3_add(camera.pos, whitgl_fvec3_scale_val(forwards, -joystick.y/32));
-	if(whitgl_input_down(WHITGL_INPUT_A))
+	if(whitgl_input_held(WHITGL_INPUT_A))
 		camera.pos.y -= 1/20.0;
-	if(whitgl_input_down(WHITGL_INPUT_B))
+	if(whitgl_input_held(WHITGL_INPUT_B))
 		camera.pos.y += 1/20.0;
 	return camera;
 }

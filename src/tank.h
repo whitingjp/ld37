@@ -1,7 +1,7 @@
 #ifndef LD37_TANK_H_
 #define LD37_TANK_H_
 
-#include <whitgl/math3d.h>
+#include <whitgl/math.h>
 
 typedef struct
 {

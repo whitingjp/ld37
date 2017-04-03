@@ -24,11 +24,14 @@ def main():
   objdir = joinp(builddir, 'obj')
   libdir = joinp(builddir, 'lib')
   data_in =  'data'
-  buildfile = open('build.ninja', 'w')
+  buildfile = open(joinp('build','build.ninja'), 'w')
   n = ninja_syntax.Writer(buildfile)
   cflags, ldflags = build.flags(inputdir)
   cflags += ' -Iwhitgl/inc -Isrc -g -O2'
-  build.rules(n, cflags, ldflags, joinp('whitgl','scripts'))
+  n.variable('cflags', cflags)
+  n.variable('ldflags', ldflags)
+  n.variable('scripts_dir', joinp('whitgl','scripts'))
+  build.rules(n)
   if build.plat == 'Windows':
     n.rule('windres', command='windres $in -O coff -o $out', description='windres $out')
   obj = build.walk_src(n, srcdir, objdir)
