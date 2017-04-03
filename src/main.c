@@ -10,6 +10,7 @@
 #include <whitgl/sys.h>
 #include <whitgl/timer.h>
 
+#include <capture.h>
 #include <debug_camera.h>
 #include <tank.h>
 #include <pause.h>
@@ -237,7 +238,6 @@ int main()
 	setup.size.y = 9*64;
 	setup.pixel_size = 1;
 	setup.name = "Nest";
-	setup.start_focused = false;
 	setup.cursor = CURSOR_HIDE;
 	setup.fullscreen = true;
 	setup.num_framebuffers = 6;
@@ -319,6 +319,7 @@ int main()
 	whitgl_float title_transition = 0;
 
 	ld37_pause pause = ld37_pause_zero;
+	// capture_info capture = capture_info_zero; 
 
 	rewinder = ld37_rewinder_zero;
 	record_rewinder(&rewinder, tanks);
@@ -528,8 +529,8 @@ int main()
 		whitgl_sys_draw_finish();
 
 
-		if(!whitgl_sys_window_focused())
-			usleep(10000);
+		//if(!whitgl_sys_window_focused())
+		//	usleep(10000);
 	}
 
 	whitgl_input_shutdown();
